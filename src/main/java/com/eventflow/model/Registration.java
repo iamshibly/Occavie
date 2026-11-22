@@ -55,4 +55,17 @@ public class Registration {
     private String paymentMethod;
     private String paymentReference;
 
+    /** Random, unguessable lookup half of the signed QR token (see TicketTokenService). Never the database id. */
+    @Indexed(unique = true, sparse = true)
+    private String ticketCode;
+
+    /** CONFIRMED (default when null) or CANCELLED. */
+    private String status;
+
+    /** Set exactly once, atomically, by CheckInService. */
+    private LocalDateTime checkedInAt;
+    private String checkedInBy;
+
+    public boolean isCancelled() { return "CANCELLED".equals(status); }
+
 }

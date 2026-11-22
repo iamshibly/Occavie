@@ -13,5 +13,7 @@ public record EventForm(
         int capacity,
         String pricingType,
         String basePrice,
-        MultipartFile image
+        MultipartFile image,
+        String address,
+        String onlineUrl
 ) {}

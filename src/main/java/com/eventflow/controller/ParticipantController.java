@@ -30,6 +30,7 @@ public class ParticipantController {
     private final EventService eventService;
     private final RegistrationService registrationService;
     private final FeedbackService feedbackService;
+    private final com.eventflow.service.WaitlistService waitlistService;
 
 
 
@@ -52,6 +53,28 @@ public class ParticipantController {
             redirectAttributes.addFlashAttribute("toastError", ex.getMessage());
             return "redirect:/events/" + eventId + "#tickets";
         }
+    }
+
+    @PostMapping("/participant/events/{eventId}/waitlist")
+    public String joinWaitlist(@PathVariable String eventId, Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            waitlistService.join(eventId, userService.currentUser(authentication));
+            redirectAttributes.addFlashAttribute("toastSuccess", "You are on the waitlist. We will notify you if a seat opens up.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("toastError", ex.getMessage());
+        }
+        return "redirect:/events/" + eventId + "#tickets";
+    }
+
+    @PostMapping("/participant/events/{eventId}/waitlist/leave")
+    public String leaveWaitlist(@PathVariable String eventId, Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            waitlistService.leave(eventId, userService.currentUser(authentication).getId());
+            redirectAttributes.addFlashAttribute("toastSuccess", "You left the waitlist.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("toastError", ex.getMessage());
+        }
+        return "redirect:/events/" + eventId + "#tickets";
     }
 
     @PostMapping("/participant/events/{eventId}/cancel")

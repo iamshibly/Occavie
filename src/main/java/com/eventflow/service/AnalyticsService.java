@@ -92,7 +92,20 @@ public class AnalyticsService {
             ratingValues.add(feedback.stream().filter(item -> item.getRating() == currentRating).count());
         }
 
+        long cancelled = safeEvents.stream().mapToLong(Event::getCancelledRegistrations).sum();
+        long checkedIn = registrations.stream().filter(r -> r.getCheckedInAt() != null).count();
+        int attendance = totalBookings == 0 ? 0 : (int) Math.round(checkedIn * 100.0 / totalBookings);
+        Map<String, Long> tickets = registrations.stream().collect(Collectors.groupingBy(
+                r -> r.getTicketTypeName() == null || r.getTicketTypeName().isBlank() ? "General" : r.getTicketTypeName(),
+                LinkedHashMap::new, Collectors.counting()));
+
         return DashboardAnalytics.builder()
+                .totalEvents(safeEvents.size())
+                .cancelledRegistrations(cancelled)
+                .checkedIn(checkedIn)
+                .attendancePercent(attendance)
+                .ticketLabels(new ArrayList<>(tickets.keySet()))
+                .ticketValues(new ArrayList<>(tickets.values()))
                 .totalBookings(totalBookings)
                 .completedEvents(completedEvents)
                 .totalReviews(totalReviews)

@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/** Stored record of an EventFlow simulated payment. */
+/** Stored record of an Occavie simulated payment. */
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 @Document(collection = "payment_attempts")
 public class PaymentAttempt {

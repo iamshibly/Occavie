@@ -10,7 +10,7 @@ public record HomeEventCard(
         String formattedDate, String location, boolean paid
 ) {
     public static HomeEventCard from(Event event, ViewFormatter display) {
-        return new HomeEventCard(event.getId(), event.getCategory(), event.getImageUrl(),
+        return new HomeEventCard(event.getId(), event.getCategory(), display.listingImageUrl(event),
                 event.getTitle(), display.eventDate(event), event.getLocation(), EventRules.isPaid(event));
     }
 }

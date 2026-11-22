@@ -1,15 +1,16 @@
-// EventFlow demo data, MongoDB Compass Shell / mongosh.
+// Occavie demo data, MongoDB Compass Shell / mongosh.
 // 40 events, zero seeded registrations, zero seeded feedback, zero new accounts.
 // This RESET deletes previous seed data and any bookings/reviews on these 40 demo events.
 // Manual records for OTHER events are not touched.
 (function () {
   const d = db.getSiblingDB("eventflow");
+  // Kept as EVENTFLOW_DEMO_SEED_V1 so a re-run still removes data from earlier seeds.
   const tag = "EVENTFLOW_DEMO_SEED_V1";
   const organizer = d.users.findOne({ email: "organizer@eventflow.com" });
   const admin = d.users.findOne({ email: "admin@eventflow.com" });
   const participant = d.users.findOne({ email: "participant@eventflow.com" });
   if (!organizer || !admin || !participant) {
-    throw new Error("Start EventFlow once to create the 3 existing demo accounts, then try again.");
+    throw new Error("Start Occavie once to create the 3 existing demo accounts, then try again.");
   }
   const organizerId = String(organizer._id);
   const adminId = String(admin._id);
@@ -209,7 +210,7 @@
     if (i % 2 === 0) speakers.push({
       _id: "demo40_speaker_" + key(i), eventId: eventId(i),
       name: names[i % names.length], designation: "Guest Speaker",
-      organization: "EventFlow University Demo",
+      organization: "Occavie University Demo",
       bio: "Demo speaker for the " + r[1] + " event.",
       photoUrl: "/images/default-avatar.png",
       seedTag: tag, _class: "com.eventflow.model.EventSpeaker"
@@ -258,10 +259,10 @@
   }));
   d.notifications.insertMany(notices);
 
-  // Zero pre-registrations and reviews: you create these yourself via EventFlow.
+  // Zero pre-registrations and reviews: you create these yourself via Occavie.
   const registrationCount = d.registrations.countDocuments({ eventId: { $in: allEventIds } });
   const feedbackCount = d.feedback.countDocuments({ eventId: { $in: allEventIds } });
-  print("=== EVENTFLOW DEMO READY ===");
+  print("=== OCCAVIE DEMO READY ===");
   print("40 demo events: " + d.events.countDocuments({ seedTag: tag }));
   print("Upcoming: " + d.events.countDocuments({ seedTag: tag, status: "UPCOMING" }));
   print("Completed: " + d.events.countDocuments({ seedTag: tag, status: "COMPLETED" }));

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('About Occavie', 'public')}"></head>
+<body class="ov-page ov-about-page">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div th:replace="~{fragments :: siteNav('about')}"></div>
+<main id="main-content">
+
+  <!-- Hero -->
+  <section class="ov-auth-scene ov-ab-hero" aria-labelledby="abTitle">
+    <div class="ov-auth-bg" aria-hidden="true">
+      <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span>
+      <i class="orb o1"></i><i class="orb o2"></i>
+    </div>
+    <div class="ov-container ov-ab-hero-inner">
+      <p class="ov-eyebrow">ABOUT OCCAVIE</p>
+      <h1 id="abTitle">Make every <em>moment count.</em></h1>
+      <p class="ov-ab-lead">Occavie is where people find events worth showing up for, and where organizers get everything they need to run them well, from the first idea to the last check-in.</p>
+      <div class="ov-ab-cta">
+        <a class="ov-gold-button" th:href="@{/events}" href="/events">Explore events</a>
+        <a class="ov-ab-ghost" th:if="${currentUser == null}" th:href="@{/register}" href="/register">Create a free account</a>
+        <a class="ov-ab-ghost" th:if="${currentUser != null}" th:href="@{/dashboard}" href="/dashboard">Open dashboard</a>
+      </div>
+      <ul class="ov-ab-facts" aria-label="Occavie at a glance">
+        <li><strong>3</strong><span>workspaces: participant, organizer, admin</span></li>
+        <li><strong>5</strong><span>smart helpers built in</span></li>
+        <li><strong>0</strong><span>third-party AI or tracking services</span></li>
+        <li><strong>2</strong><span>themes, light and dark, on any screen</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Story -->
+  <section class="ov-container ov-ab-section ov-ab-story" aria-labelledby="abStory" data-reveal>
+    <div class="ov-ab-collage" aria-hidden="true">
+      <img th:src="@{/images/photos/conference.webp}" src="/images/photos/conference.webp" alt="" loading="lazy" width="520" height="340">
+      <img th:src="@{/images/photos/networking.webp}" src="/images/photos/networking.webp" alt="" loading="lazy" width="360" height="260">
+      <img th:src="@{/images/photos/workshop.webp}" src="/images/photos/workshop.webp" alt="" loading="lazy" width="360" height="260">
+    </div>
+    <div class="ov-ab-copy">
+      <p class="ov-eyebrow">OUR STORY</p>
+      <h2 id="abStory">Great experiences start with showing up.</h2>
+      <p>Finding the right event should not mean scrolling through chats and posters. And running one should not mean juggling spreadsheets, payment screenshots and paper lists.</p>
+      <p>Occavie puts it all in one place: a clear way to discover events, book in a few taps, and walk in with a ticket on your phone, plus a complete toolkit for the people hosting them.</p>
+    </div>
+  </section>
+
+  <!-- Who it is for -->
+  <section class="ov-container ov-ab-section" aria-labelledby="abWho" data-reveal>
+    <div class="ov-ab-head"><p class="ov-eyebrow">BUILT FOR EVERYONE INVOLVED</p><h2 id="abWho">One platform, three workspaces</h2></div>
+    <div class="ov-ab-roles">
+      <article class="ov-ab-role" data-cat="tech">
+        <span class="ov-ab-ic"><i class="bi bi-ticket-perforated" aria-hidden="true"></i></span>
+        <h3>Participants</h3>
+        <p>Discover and attend with confidence.</p>
+        <ul><li>Search in plain sentences and compare events</li><li>Book free or paid tickets, join waitlists</li><li>Instant PDF tickets with QR codes</li><li>Saved events, calendar links, reminders</li></ul>
+      </article>
+      <article class="ov-ab-role is-featured">
+        <span class="ov-ab-ic"><i class="bi bi-calendar2-event" aria-hidden="true"></i></span>
+        <h3>Organizers</h3>
+        <p>Plan, sell and run events end to end.</p>
+        <ul><li>Guided event wizard with drafts and preview</li><li>Ticket types, coupons and capacity control</li><li>QR check-in at the door</li><li>Analytics, CSV exports and a Copilot readiness score</li></ul>
+      </article>
+      <article class="ov-ab-role" data-cat="business">
+        <span class="ov-ab-ic"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
+        <h3>Admins</h3>
+        <p>Keep the whole platform healthy.</p>
+        <ul><li>Manage users, roles and events</li><li>Approve events before they go live</li><li>Moderate reviews and answer support</li><li>Platform-wide analytics</li></ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- Smart helpers -->
+  <section class="ov-ab-band" aria-labelledby="abSmart" data-reveal>
+    <div class="ov-container ov-ab-section">
+      <div class="ov-ab-head is-light"><p class="ov-eyebrow">SMART, WITHOUT THE BLACK BOX</p><h2 id="abSmart">Five helpers that make events easier</h2>
+        <p>Every helper runs on clear, explainable rules, so there is no external AI service, no API key and no mystery about why you see what you see.</p></div>
+      <div class="ov-ab-smart">
+        <a href="/events" th:href="@{/events}"><i class="bi bi-search" aria-hidden="true"></i><h3>Smart search</h3><p>Type "free AI workshops this weekend" and we filter for you.</p></a>
+        <a href="/events" th:href="@{/events}"><i class="bi bi-lightbulb" aria-hidden="true"></i><h3>Recommendations</h3><p>Picks based on what you save and book, each with a reason behind the 💡.</p></a>
+        <a href="/events" th:href="@{/events}"><i class="bi bi-columns-gap" aria-hidden="true"></i><h3>Compare events</h3><p>Two or three events side by side: date, price, seats and more.</p></a>
+        <a href="/events" th:href="@{/events}"><i class="bi bi-chat-dots" aria-hidden="true"></i><h3>Concierge</h3><p>Ask about seats, prices and venues and get answers from live data.</p></a>
+        <a href="/login" th:href="@{/login}"><i class="bi bi-rocket-takeoff" aria-hidden="true"></i><h3>Organizer Copilot</h3><p>A readiness score and a ranked to-do list for every event.</p></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Principles -->
+  <section class="ov-container ov-ab-section" aria-labelledby="abTrust" data-reveal>
+    <div class="ov-ab-head"><p class="ov-eyebrow">OUR PRINCIPLES</p><h2 id="abTrust">Built to be trusted</h2></div>
+    <div class="ov-ab-values">
+      <div><i class="bi bi-lock" aria-hidden="true"></i><h3>Secure by default</h3><p>Role-based access, protected forms, rate limits, signed tickets and single-use check-in.</p></div>
+      <div><i class="bi bi-eye-slash" aria-hidden="true"></i><h3>Private</h3><p>No ad trackers, and participant details are visible only to the organizer of that event.</p></div>
+      <div><i class="bi bi-universal-access" aria-hidden="true"></i><h3>Accessible</h3><p>Keyboard friendly, readable contrast and reduced-motion support, checked across screen sizes.</p></div>
+      <div><i class="bi bi-patch-check" aria-hidden="true"></i><h3>Honest</h3><p>Payments here are a demonstration: no real money moves, and demo amounts are never shown as revenue.</p></div>
+    </div>
+  </section>
+
+  <!-- Developer + CTA -->
+  <section class="ov-container ov-ab-section" aria-labelledby="abDev" data-reveal th:with="devName=${@site.developerName},devUrl=${@site.developerUrl},devMail=${@site.contactEmail},devWa=${@site.contactWhatsapp},devFb=${@site.facebookUrl},devLi=${@site.linkedinUrl}">
+    <div class="ov-ab-dev">
+      <div class="ov-ab-avatar" aria-hidden="true" th:text="${@site.developerInitials}">OC</div>
+      <div>
+        <p class="ov-eyebrow">THE PERSON BEHIND IT</p>
+        <h2 id="abDev" th:text="${devName}">Developer</h2>
+        <p>Occavie is designed and developed by <strong th:text="${devName}">the developer</strong>. Questions, feedback or want to work together? Say hello.</p>
+        <div class="ov-ab-links">
+          <a th:if="${!#strings.isEmpty(devLi)}" th:href="${devLi}" target="_blank" rel="noopener"><i class="bi bi-linkedin" aria-hidden="true"></i> LinkedIn</a>
+          <a th:if="${!#strings.isEmpty(devFb)}" th:href="${devFb}" target="_blank" rel="noopener"><i class="bi bi-facebook" aria-hidden="true"></i> Facebook</a>
+          <a th:if="${!#strings.isEmpty(devMail)}" th:href="${'mailto:' + devMail}"><i class="bi bi-envelope" aria-hidden="true"></i> Email</a>
+          <a th:href="@{/contact}" href="/contact"><i class="bi bi-headset" aria-hidden="true"></i> Contact support</a>
+        </div>
+      </div>
+    </div>
+    <div class="ov-ab-final">
+      <h2>Ready to make your next moment count?</h2>
+      <div class="ov-ab-cta">
+        <a class="ov-gold-button" th:href="@{/events}" href="/events">Find an event</a>
+        <a class="ov-ab-ghost on-light" th:if="${currentUser == null}" th:href="@{/register}" href="/register">Host your own</a>
+        <a class="ov-ab-ghost on-light" th:if="${currentUser != null and currentUser.role == 'ORGANIZER'}" th:href="@{/organizer/events/new}" href="/organizer/events/new">Create an event</a>
+        <a class="ov-ab-ghost on-light" th:if="${currentUser != null and currentUser.role != 'ORGANIZER'}" th:href="@{/dashboard}" href="/dashboard">Open dashboard</a>
+      </div>
+    </div>
+  </section>
+</main>
+<div th:replace="~{fragments :: siteFooter}"></div>
+<script th:src="@{/js/site.js(v='2026.11.5')}" src="/js/site.js"></script>
+<script th:src="@{/js/compare.js}" src="/js/compare.js"></script>
+<script>
+(function(){var els=document.querySelectorAll('[data-reveal]');if(!('IntersectionObserver' in window)||matchMedia('(prefers-reduced-motion: reduce)').matches){return;}
+document.documentElement.classList.add('ov-reveal-on');
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('is-in');io.unobserve(e.target);}});},{threshold:.12});
+els.forEach(function(el){io.observe(el);});})();
+</script>
+</body>
+</html>

@@ -27,9 +27,13 @@ public class NotificationController {
 
 
     @GetMapping("/notifications")
-    public String notifications(Authentication authentication, Model model) {
+    public String notifications(Authentication authentication, Model model,
+                                @org.springframework.web.bind.annotation.RequestParam(defaultValue = "all") String filter) {
         User user = userService.currentUser(authentication);
-        model.addAttribute("notifications", notificationService.findAllForUser(user.getId()));
+        boolean unreadOnly = "unread".equals(filter);
+        model.addAttribute("filter", unreadOnly ? "unread" : "all");
+        model.addAttribute("notifications", notificationService.findAllForUser(user.getId()).stream()
+                .filter(n -> !unreadOnly || !n.isRead()).toList());
         return "notifications";
     }
 
@@ -53,6 +57,13 @@ public class NotificationController {
         return link != null && link.startsWith("/") && !link.startsWith("//")
                 ? "redirect:" + link
                 : "redirect:/notifications";
+    }
+
+    @PostMapping("/notifications/{id}/read")
+    public String markRead(@PathVariable String id, @org.springframework.web.bind.annotation.RequestParam(defaultValue = "all") String filter,
+                           Authentication authentication) {
+        notificationService.markRead(id, userService.currentUser(authentication).getId());
+        return "redirect:/notifications" + ("unread".equals(filter) ? "?filter=unread" : "");
     }
 
     @PostMapping("/notifications/read-all")

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Waitlist', 'app')}"></head>
+<body class="ef-workspace">
+<div th:replace="~{fragments :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('myevents')}"></div>
+    <main class="app-main">
+        <section class="page-heading">
+            <div>
+                <span class="section-kicker">ORGANIZER WORKSPACE</span>
+                <h1>Waitlist</h1>
+                <p th:text="${event.title}">Event</p>
+            </div>
+            <a class="secondary-button" th:href="@{'/organizer/events/' + ${event.id} + '/participants'}"><i class="bi bi-people"></i>Participants</a>
+        </section>
+        <section class="metric-grid">
+            <article class="metric-card"><div class="metric-icon"><i class="bi bi-hourglass-split"></i></div><div><span>Waiting</span><strong th:text="${#lists.size(entries)}">0</strong></div></article>
+            <article class="metric-card"><div class="metric-icon"><i class="bi bi-stopwatch"></i></div><div><span>Seats on hold</span><strong th:text="${reservedSeats}">0</strong></div></article>
+            <article class="metric-card"><div class="metric-icon"><i class="bi bi-door-open"></i></div><div><span>Free seats</span><strong th:text="${freeSeats}">0</strong></div></article>
+            <article class="metric-card"><div class="metric-icon"><i class="bi bi-people"></i></div><div><span>Capacity</span><strong th:text="${event.capacity}">0</strong></div></article>
+        </section>
+        <section class="table-card" th:if="${!#lists.isEmpty(entries)}">
+            <div class="data-table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table class="data-table">
+                <caption class="ov-sr">Participants waiting for a seat, in order</caption>
+                <thead><tr><th scope="col">#</th><th scope="col">Participant</th><th scope="col">Joined</th><th scope="col">Status</th></tr></thead>
+                <tbody>
+                    <tr th:each="e, s : ${entries}">
+                        <td th:text="${s.index + 1}">1</td>
+                        <td><strong th:text="${e.participantName}">Name</strong><small th:text="${e.participantEmail}">email</small></td>
+                        <td th:text="${#temporals.format(e.joinedAt, 'd MMM yyyy, h:mm a')}">Date</td>
+                        <td><span class="status-badge" th:classappend="${e.status == 'OFFERED'} ? ' success-status' : ''" th:text="${e.status == 'OFFERED' ? 'Seat held until ' + #temporals.format(e.offerExpiresAt, 'd MMM, h:mm a') : 'Waiting'}">Waiting</span></td>
+                    </tr>
+                </tbody>
+            </table></div>
+        </section>
+        <section class="large-empty" th:if="${#lists.isEmpty(entries)}">
+            <div class="empty-icon"><i class="bi bi-hourglass-split"></i></div><h2>Nobody is waiting</h2>
+            <p>When the event is full, participants can join the waitlist and appear here in order.</p>
+        </section>
+    </main>
+</div>
+<div th:replace="~{fragments :: toasts}"></div>
+<script th:src="@{/js/site.js(v='2026.11.3')}" src="/js/site.js"></script>
+</body>
+</html>

@@ -29,14 +29,15 @@ public class RegistrationDocumentController {
     private final RegistrationRepository registrationRepository;
     private final EventRepository eventRepository;
     private final RegistrationDocumentService documents;
+    private final com.eventflow.service.RegistrationService registrationService;
 
     @GetMapping("/participant/registrations/{registrationId}/ticket.pdf")
     public ResponseEntity<byte[]> ticket(@PathVariable String registrationId,
                                          Authentication authentication) {
-        Registration registration = ownedRegistration(registrationId, authentication);
+        Registration registration = registrationService.ensureTicketCode(ownedRegistration(registrationId, authentication));
         Event event = activeEvent(registration);
         try {
-            return download(documents.ticket(registration, event), "eventflow-ticket-", registration);
+            return download(documents.ticket(registration, event), "occavie-ticket-", registration);
         } catch (IOException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to create ticket.", ex);
         }
@@ -53,7 +54,7 @@ public class RegistrationDocumentController {
         }
         Event event = activeEvent(registration);
         try {
-            return download(documents.receipt(registration, event), "eventflow-receipt-", registration);
+            return download(documents.receipt(registration, event), "occavie-receipt-", registration);
         } catch (IOException ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to create receipt.", ex);
         }

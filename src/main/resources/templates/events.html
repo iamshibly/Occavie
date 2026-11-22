@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Explore Events', 'public')}"></head>
+<body class="ov-page ov-explore-page">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div th:replace="~{fragments :: siteNav('events')}"></div>
+<main id="main-content">
+  <section class="ov-explore-intro ov-explore-photo ov-ex-hero" aria-labelledby="exTitle">
+    <div class="ov-auth-bg" aria-hidden="true">
+      <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span>
+      <i class="orb o1"></i><i class="orb o2"></i>
+    </div>
+    <div class="ov-container">
+      <p class="ov-eyebrow">EVENTS · LEARN · CONNECT</p>
+      <h1 id="exTitle">Explore <em>events</em></h1>
+      <p>Say what you are looking for, or narrow by topic, date, place, price and status.</p>
+      <ul class="ov-ct-chips" aria-label="Highlights">
+        <li><i class="bi bi-calendar2-check" aria-hidden="true"></i> <span th:text="${initialEventCount + ' events to explore'}">24 events to explore</span></li>
+        <li><i class="bi bi-columns-gap" aria-hidden="true"></i> Compare up to 3</li>
+        <li><i class="bi bi-heart" aria-hidden="true"></i> Save your favourites</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="ov-container ov-explore-content">
+    <section class="ov-smart" aria-labelledby="ovSmartTitle">
+      <div class="ov-smart-head"><span class="ov-smart-badge"><i class="bi bi-stars" aria-hidden="true"></i> Smart search</span>
+        <h2 id="ovSmartTitle">Just say what you are looking for</h2></div>
+      <form id="ovSmartForm" class="ov-smart-form" role="search">
+        <label class="ov-sr" for="ovSmartInput">Describe the events you want</label>
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input id="ovSmartInput" type="search" maxlength="160" autocomplete="off" placeholder="Try: free tech events this weekend in Dhaka">
+        <button class="primary-button" type="submit">Find events</button>
+      </form>
+      <div class="ov-smart-examples" role="group" aria-label="Example searches"><span>Try</span>
+        <button type="button" data-ask="free events this weekend">Free this weekend</button>
+        <button type="button" data-ask="AI and tech workshops under 500">AI &amp; tech under ৳500</button>
+        <button type="button" data-ask="music concerts in December">Music in December</button>
+        <button type="button" data-ask="yoga or fitness tomorrow">Yoga tomorrow</button>
+        <button type="button" data-ask="cheap design workshops next month">Cheap design next month</button>
+      </div>
+      <div id="ovSmartChips" class="ov-smart-chips" aria-live="polite"></div>
+      <p id="ovSmartNote" class="ov-smart-note" role="status" hidden></p>
+    </section>
+
+    <section class="ov-filter-shell" id="v1-filters" aria-label="Search and filter events">
+      <form class="ov-filters" id="ovFilterForm" role="search" onsubmit="return false">
+        <label class="ov-field ov-field-search" for="eventSearch"><span>Search</span>
+          <span class="ov-input-icon"><i class="bi bi-search" aria-hidden="true"></i><input id="eventSearch" type="search" placeholder="Title, topic or keyword" maxlength="120" autocomplete="off"></span></label>
+        <label class="ov-field" for="locationFilter"><span>Location</span>
+          <span class="ov-input-icon"><i class="bi bi-geo-alt" aria-hidden="true"></i><input id="locationFilter" type="search" placeholder="City or venue" maxlength="80" autocomplete="off"></span></label>
+        <label class="ov-field" for="categoryFilter"><span>Category</span>
+          <select id="categoryFilter"><option value="ALL">All categories</option><option th:each="category : ${categories}" th:value="${category}" th:text="${category}">Technology</option></select></label>
+        <label class="ov-field" for="pricingFilter"><span>Price</span>
+          <select id="pricingFilter"><option value="ALL">Free &amp; paid</option><option value="FREE">Free</option><option value="PAID">Paid</option></select></label>
+        <label class="ov-field" for="eventStatusFilter"><span>Status</span>
+          <select id="eventStatusFilter"><option value="UPCOMING">Upcoming</option><option value="COMPLETED">Completed</option><option value="ALL">All events</option></select></label>
+        <label class="ov-field" for="dateFrom"><span>From date</span><input id="dateFrom" type="date"></label>
+        <label class="ov-field" for="dateTo"><span>To date</span><input id="dateTo" type="date"></label>
+        <label class="ov-field" for="sortSelect"><span>Sort by</span>
+          <select id="sortSelect">
+            <option value="date-asc">Date: soonest first</option>
+            <option value="date-desc">Date: latest first</option>
+            <option value="title-asc">Title: A to Z</option>
+            <option value="price-asc">Price: low to high</option>
+            <option value="price-desc">Price: high to low</option>
+          </select></label>
+      </form>
+      <div class="ov-category-pills" role="group" aria-label="Quick category filter">
+        <button class="ov-category-button is-active" type="button" data-category="ALL" aria-pressed="true">All</button>
+        <button class="ov-category-button" type="button" th:each="category : ${categories}" th:attr="data-category=${category}" th:text="${category}" aria-pressed="false">Technology</button>
+      </div>
+    </section>
+
+    <div class="ov-list-heading">
+      <h2 id="resultsHeading">Events</h2>
+      <div class="ov-list-meta"><span id="resultCount" role="status" aria-live="polite" th:text="${initialEventCount + ' events'}">Events</span>
+        <button type="button" class="ov-text-button" id="v1ClearFilters">Reset filters</button></div>
+    </div>
+
+    <noscript><div class="ov-empty"><h3>JavaScript is required for filtering</h3><p>Enable JavaScript to search and filter. All events are listed below.</p></div></noscript>
+
+    <div class="ov-event-grid" id="v1EventGrid" aria-labelledby="resultsHeading">
+      <article class="ov-event-card" th:each="event : ${events}"
+               th:with="efPaid=${@display.paid(event)},efStatus=${@display.status(event)},spots=${event.capacity - registrationCounts[event.id]}"
+               th:attr="data-id=${event.id},data-category=${event.category},data-pricing=${efPaid ? 'PAID' : 'FREE'},data-status=${efStatus},data-date=${event.date},data-title=${event.title},data-location=${event.location},data-price=${startingPrices[event.id]},data-search=${event.title + ' ' + event.location + ' ' + event.description + ' ' + event.category + ' ' + event.organizerName}">
+        <a class="ov-card-photo" th:href="@{'/events/' + ${event.id}}" href="/events" th:aria-label="${'View ' + event.title}" tabindex="-1">
+          <img data-event-image th:attr="data-event-category=${event.category}"
+               th:with="efCover=${@display.listingImageUrl(event)}" th:src="${efCover}"
+               src="/images/event-visual.png" th:alt="${event.title + ' cover image'}" alt="Event cover" width="600" height="375" loading="lazy" decoding="async">
+          <span class="ov-card-tag" th:attr="data-cat=${event.category}" th:text="${event.category}">Technology</span>
+        </a>
+        <div class="ov-event-card-body">
+          <span class="ov-event-date"><i class="bi bi-calendar3" aria-hidden="true"></i><span th:text="${@display.eventDate(event) + ' · ' + @display.eventTime(event)}">Date</span></span>
+          <h3><a th:href="@{'/events/' + ${event.id}}" th:text="${event.title}">Event title</a></h3>
+          <p class="ov-event-location"><i class="bi bi-geo-alt" aria-hidden="true"></i> <span th:text="${event.location}">Dhaka, Bangladesh</span></p>
+          <p class="ov-card-availability" th:classappend="${efStatus == 'COMPLETED' or spots le 0 ? 'is-closed' : (spots le 10 ? 'is-low' : '')}"
+             th:text="${efStatus == 'COMPLETED' ? 'Event ended' : (spots le 0 ? 'Sold out' : spots + (spots == 1 ? ' spot left' : ' spots left'))}">50 spots left</p>
+          <div class="ov-card-footer">
+            <strong class="ov-card-price" th:classappend="${efPaid} ? '' : ' is-free'" th:text="${startingPrices[event.id]}">Free</strong>
+            <a class="ov-card-action" th:href="@{'/events/' + ${event.id}}">View details <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <nav class="ov-pagination" id="ovPagination" aria-label="Event pages" hidden></nav>
+
+    <div id="v1Empty" class="ov-empty" hidden>
+      <div class="empty-icon"><i class="bi bi-search"></i></div>
+      <h3>No events match your filters</h3>
+      <p>Try a different keyword, widen the date range, or reset the filters.</p>
+      <button type="button" class="secondary-button" id="v1ClearFilters2">Reset filters</button>
+    </div>
+    <div class="ov-empty" th:if="${#lists.isEmpty(events)}">
+      <div class="empty-icon"><i class="bi bi-calendar2-plus"></i></div>
+      <h3>No events published yet</h3>
+      <p>Please check back soon.</p>
+      <a class="primary-button" th:href="@{/}">Back to home</a>
+    </div>
+  </div>
+</main>
+<div th:replace="~{fragments :: siteFooter}"></div>
+<script th:src="@{/js/site.js(v='2026.11.2')}" src="/js/site.js"></script>
+<script th:src="@{/js/compare.js}" src="/js/compare.js"></script>
+<script th:src="@{/js/smart-search.js}" src="/js/smart-search.js"></script>
+<script th:src="@{/js/explore.js(v='2026.11.2')}" src="/js/explore.js"></script>
+</body>
+</html>

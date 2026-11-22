@@ -13,6 +13,8 @@ public interface RegistrationRepository extends MongoRepository<Registration, St
     long countByParticipantId(String participantId);
     long countByTicketTypeId(String ticketTypeId);
     long countByCouponId(String couponId);
+    Optional<Registration> findByTicketCode(String ticketCode);
+    long countByEventIdAndCheckedInAtNotNull(String eventId);
     Optional<Registration> findByEventIdAndParticipantId(String eventId, String participantId);
     List<Registration> findByParticipantIdOrderByRegisteredAtDesc(String participantId);
     List<Registration> findByEventIdOrderByRegisteredAtAsc(String eventId);

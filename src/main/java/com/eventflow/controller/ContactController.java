@@ -66,7 +66,7 @@ public class ContactController {
             contactRequestService.submit(form);
             redirectAttributes.addFlashAttribute(
                     "contactSuccess",
-                    "Your message has been sent. EventFlow support will review it shortly."
+                    "Your message has been sent. Occavie support will review it shortly."
             );
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("contactError", ex.getMessage());

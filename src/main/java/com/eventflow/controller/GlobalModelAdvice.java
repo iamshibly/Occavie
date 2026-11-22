@@ -18,11 +18,17 @@ public class GlobalModelAdvice {
     private final UserService userService;
     private final NotificationService notificationService;
     private final ContactRequestService contactRequestService;
+    private final com.eventflow.service.EventService eventService;
 
 
 
     @ModelAttribute
-    public void addCommonData(Authentication authentication, Model model) {
+    public void addCommonData(Authentication authentication, Model model,
+                              jakarta.servlet.http.HttpServletRequest request) {
+        model.addAttribute("siteUrl", org.springframework.web.servlet.support.ServletUriComponentsBuilder
+                .fromContextPath(request).toUriString());
+        model.addAttribute("canonicalUrl", org.springframework.web.servlet.support.ServletUriComponentsBuilder
+                .fromContextPath(request).path(request.getRequestURI().substring(request.getContextPath().length())).toUriString());
         if (authentication == null || !authentication.isAuthenticated()
                 || authentication instanceof AnonymousAuthenticationToken) {
             return;
@@ -33,6 +39,7 @@ public class GlobalModelAdvice {
         model.addAttribute("unreadCount", notificationService.countUnread(user.getId()));
         if ("ADMIN".equals(user.getRole())) {
             model.addAttribute("newContactRequestCount", contactRequestService.countNew());
+            model.addAttribute("pendingApprovalCount", eventService.pendingApprovalCount());
         }
     }
 }

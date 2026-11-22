@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Payment Result', 'public')}"></head>
+<body class="ov-page ef-payment-page ov-co-page">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div th:replace="~{fragments :: siteNav('events')}"></div>
+<section class="ov-auth-scene ov-co-hero is-result" th:with="paid=${attempt.status == 'PAID'}" aria-labelledby="coTitle">
+  <div class="ov-auth-bg" aria-hidden="true">
+    <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span>
+    <i class="orb o1"></i><i class="orb o2"></i>
+  </div>
+  <div class="ov-container ov-co-hero-inner">
+    <p class="ov-eyebrow" th:text="${paid ? 'ALL SET' : 'NOT COMPLETED'}">ALL SET</p>
+    <h1 id="coTitle" th:utext="${paid ? 'You are <em>in.</em>' : 'Registration <em>not confirmed</em>'}">You are in.</h1>
+    <ol class="ov-co-steps" aria-label="Checkout progress">
+      <li class="is-done"><b><i class="bi bi-ticket-perforated" aria-hidden="true"></i></b><span>Choose ticket</span></li>
+      <li class="is-done"><b><i class="bi bi-credit-card-2-front" aria-hidden="true"></i></b><span>Payment</span></li>
+      <li th:class="${paid ? 'is-done' : 'is-fail'}"><b><i class="bi" th:classappend="${paid ? 'bi-check2-circle' : 'bi-x-circle'}" aria-hidden="true"></i></b><span th:text="${paid ? 'Confirmed' : 'Not confirmed'}">Confirmed</span></li>
+    </ol>
+  </div>
+</section>
+<main class="ov-container ov-co-main" id="main-content">
+ <section class="ov-co-result" th:with="paid=${attempt.status == 'PAID'}">
+   <div class="ov-co-ticket">
+     <div class="ov-co-ticket-top">
+       <div th:class="${paid ? 'ef-result-icon ef-result-ok' : 'ef-result-icon ef-result-wait'}"><i th:class="${paid ? 'bi bi-check-lg' : 'bi bi-exclamation-lg'}" aria-hidden="true"></i></div>
+       <h2 th:text="${paid ? 'Registration confirmed' : 'Registration not confirmed'}">Payment status</h2>
+       <p th:if="${paid}">Your ticket is ready. Show the QR code at the door.</p>
+       <p th:if="${!paid}">Your registration was not completed. You were not booked.</p>
+       <p class="ov-demo-banner inline" th:if="${paid}" role="note"><i class="bi bi-info-circle-fill" aria-hidden="true"></i><span>Demo booking: this was a simulated payment. No real money was collected.</span></p>
+     </div>
+     <div class="ov-co-ticket-cut" aria-hidden="true"></div>
+     <div class="ef-result-facts ov-co-facts-list">
+       <div><span>Event</span><strong th:text="${event != null ? event.title : 'Event'}">Event</strong></div>
+       <div><span>Ticket</span><strong th:text="${attempt.ticketTypeName}">Standard</strong></div>
+       <div><span>Amount (demo)</span><strong th:text="${'৳' + attempt.payableAmount}">৳800</strong></div>
+       <div><span>Status</span><strong th:text="${attempt.status}">PENDING</strong></div>
+       <div><span>Reference</span><strong class="ef-ref" th:text="${attempt.transactionId}">Reference</strong></div>
+     </div>
+     <div class="ef-result-actions">
+       <a th:if="${paid and registrationId != null}" class="ef-pay-submit" th:href="@{'/participant/registrations/' + ${registrationId} + '/ticket.pdf'}"><i class="bi bi-download" aria-hidden="true"></i> Download ticket</a>
+       <a th:if="${paid and registrationId != null}" class="ef-result-download" th:href="@{'/participant/registrations/' + ${registrationId} + '/receipt.pdf'}"><i class="bi bi-receipt" aria-hidden="true"></i> Download receipt</a>
+       <a th:href="@{/participant/registrations}" th:class="${paid ? 'ef-result-download' : 'ef-pay-submit'}"><i class="bi bi-card-checklist" aria-hidden="true"></i> My registrations</a>
+       <a th:if="${!paid}" th:href="@{'/events/' + ${attempt.eventId} + '#tickets'}" class="ef-result-download"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to event</a>
+     </div>
+   </div>
+ </section>
+</main>
+<div th:replace="~{fragments :: siteFooter}"></div>
+<div th:replace="~{fragments :: toasts}"></div>
+<script th:src="@{/js/site.js(v='2026.11.1')}" src="/js/site.js"></script>
+</body>
+</html>

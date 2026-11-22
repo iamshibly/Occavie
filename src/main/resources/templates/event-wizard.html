@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head(${event != null ? 'Edit draft' : 'Create event'}, 'app')}"></head>
+<body class="ef-workspace">
+<div th:replace="~{fragments :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('create')}"></div>
+    <main class="app-main">
+        <section class="page-heading compact-heading">
+            <div>
+                <span class="section-kicker">EVENT WIZARD</span>
+                <h1 th:text="${event != null and event.title != null ? event.title : 'Create a new event'}">Create a new event</h1>
+                <p>Your progress is saved as a private draft after every step. Nothing is public until you publish.</p>
+            </div>
+            <span class="status-badge" th:if="${event != null}">DRAFT</span>
+        </section>
+
+        <ol class="wiz-steps" aria-label="Progress">
+            <li th:each="label, st : ${stepLabels}"
+                th:with="n=${st.count}" th:classappend="${n == step ? 'is-current' : (n < step ? 'is-done' : '')}">
+                <a th:if="${event != null}" th:href="@{/organizer/events/{id}/wizard(id=${event.id},step=${n})}"
+                   th:attr="aria-current=${n == step ? 'step' : null}"><span th:text="${n}">1</span><em th:text="${label}">Step</em></a>
+                <span class="wiz-static" th:if="${event == null}" th:attr="aria-current=${n == step ? 'step' : null}"><span th:text="${n}">1</span><em th:text="${label}">Step</em></span>
+            </li>
+        </ol>
+
+        <!-- Steps 1-3 and 5 post to the server and save to the draft; 4 and 6 are informational. -->
+        <form class="event-form-card wiz-card" method="post" enctype="multipart/form-data" data-loading
+              th:action="${event == null ? '/organizer/events/wizard' : '/organizer/events/' + event.id + '/wizard/' + step}"
+              th:if="${step != 4 and step != 6}">
+
+            <div th:if="${step == 1}" class="wiz-body">
+                <div class="form-section-title"><div class="form-step">1</div><div><h2>Basic event details</h2><p>What is your event and how many people can attend?</p></div></div>
+                <div class="form-grid two-columns">
+                    <div class="field-group full-width"><label for="wTitle">Event title</label>
+                        <input id="wTitle" name="title" type="text" minlength="3" maxlength="80" required th:value="${event?.title}" placeholder="e.g. Tech Innovation Summit"></div>
+                    <div class="field-group"><label for="wCategory">Category</label>
+                        <select id="wCategory" name="category" required>
+                            <option value="">Select category</option>
+                            <option th:each="c : ${categories}" th:value="${c}" th:text="${c}" th:selected="${event != null and c == event.category}">Technology</option>
+                        </select></div>
+                    <div class="field-group"><label for="wCapacity">Capacity</label>
+                        <input id="wCapacity" name="capacity" type="number" min="1" max="100000" required th:value="${event != null and event.capacity > 0 ? event.capacity : ''}" placeholder="100">
+                        <small>Registrations never exceed this number. A waitlist opens automatically when it is full.</small></div>
+                </div>
+            </div>
+
+            <div th:if="${step == 2}" class="wiz-body">
+                <div class="form-section-title"><div class="form-step">2</div><div><h2>Date, time and venue</h2><p>When and where will it happen?</p></div></div>
+                <div class="form-grid two-columns">
+                    <div class="field-group"><label for="wDate">Date</label>
+                        <input id="wDate" name="date" type="date" required th:min="${today}" th:value="${event?.date}"></div>
+                    <div class="field-group"><label for="wTime">Start time</label>
+                        <input id="wTime" name="time" type="time" required th:value="${event?.time}"></div>
+                    <div class="field-group full-width"><label for="wLocation">Venue</label>
+                        <input id="wLocation" name="location" type="text" minlength="3" maxlength="100" required th:value="${event?.location}" placeholder="Venue name and city"></div>
+                    <div class="field-group full-width"><label for="wAddress">Street address <span class="optional-label">Optional</span></label>
+                        <input id="wAddress" name="address" type="text" maxlength="160" th:value="${event?.address}" placeholder="Used for the map link"></div>
+                    <div class="field-group full-width"><label for="wOnline">Online event link <span class="optional-label">Optional</span></label>
+                        <input id="wOnline" name="onlineUrl" type="url" maxlength="300" th:value="${event?.onlineUrl}" placeholder="https://..."><small>Only shown to registered attendees.</small></div>
+                </div>
+            </div>
+
+            <div th:if="${step == 3}" class="wiz-body">
+                <div class="form-section-title"><div class="form-step">3</div><div><h2>Cover image and description</h2><p>Make a strong first impression. JPG, PNG or WEBP, up to 2 MB.</p></div></div>
+                <label class="image-upload-box" for="wImage">
+                    <img data-event-image th:src="${event != null ? event.imageUrl : '/images/event-visual.png'}" alt="Current cover image">
+                    <div class="image-upload-overlay"><i class="bi bi-cloud-arrow-up"></i><strong>Choose cover image</strong><span>Click to select a file</span></div>
+                    <input id="wImage" name="image" type="file" accept="image/jpeg,image/png,image/webp">
+                </label>
+                <div class="field-group"><label for="wDescription">Description</label>
+                    <textarea id="wDescription" name="description" rows="7" minlength="20" maxlength="1000" th:text="${event?.description}" placeholder="What will attendees experience? (20-1000 characters)"></textarea></div>
+            </div>
+
+            <div th:if="${step == 5}" class="wiz-body">
+                <div class="form-section-title"><div class="form-step">5</div><div><h2>Ticket types and pricing</h2><p>Choose free or paid, then add optional ticket types like General, VIP or Student.</p></div></div>
+                <div class="ticketing-mode-grid">
+                    <label class="ticketing-mode-option"><input type="radio" name="pricingType" value="FREE" th:checked="${!#strings.equals(event.pricingType, 'PAID')}">
+                        <span class="ticketing-mode-icon"><i class="bi bi-ticket-perforated"></i></span><span><strong>Free event</strong><small>Participants register without payment.</small></span><i class="bi bi-check-circle-fill ticketing-mode-check"></i></label>
+                    <label class="ticketing-mode-option"><input type="radio" name="pricingType" value="PAID" th:checked="${#strings.equals(event.pricingType, 'PAID')}">
+                        <span class="ticketing-mode-icon"><i class="bi bi-cash-stack"></i></span><span><strong>Paid event</strong><small>Set a base price. Checkout is a demo: no real payment is taken.</small></span><i class="bi bi-check-circle-fill ticketing-mode-check"></i></label>
+                </div>
+                <div class="field-group" style="max-width:320px"><label for="wPrice">Base ticket price (BDT)</label>
+                    <div class="money-input-wrap"><span>৳</span><input id="wPrice" name="basePrice" type="number" min="0.01" step="0.01" th:value="${event.basePrice != null and event.basePrice.signum() > 0 ? event.basePrice : ''}"></div>
+                    <small>Only used for paid events.</small></div>
+                <div class="wiz-summary">
+                    <strong th:text="${#lists.size(ticketTypes) + (#lists.size(ticketTypes) == 1 ? ' ticket type' : ' ticket types')}">0 ticket types</strong>
+                    <span th:if="${#lists.isEmpty(ticketTypes)}">No custom types yet: everyone uses General Admission.</span>
+                    <ul th:if="${!#lists.isEmpty(ticketTypes)}"><li th:each="t : ${ticketTypes}" th:text="${t.name + ' · ' + t.capacity + ' seats'}">VIP</li></ul>
+                    <a class="secondary-button" th:href="@{'/organizer/events/' + ${event.id} + '/program#tickets'}"><i class="bi bi-ticket-detailed"></i>Manage ticket types</a>
+                </div>
+            </div>
+
+            <div class="wiz-nav">
+                <a class="secondary-button" th:if="${step > 1 and event != null}" th:href="@{/organizer/events/{id}/wizard(id=${event.id},step=${step - 1})}"><i class="bi bi-arrow-left"></i>Back</a>
+                <span class="wiz-spacer"></span>
+                <button class="secondary-button" type="submit" name="action" value="draft"><i class="bi bi-save"></i>Save draft &amp; exit</button>
+                <button class="primary-button" type="submit" name="action" value="next"><span>Save &amp; continue</span><i class="bi bi-arrow-right"></i></button>
+            </div>
+        </form>
+
+        <section class="event-form-card wiz-card" th:if="${step == 4}">
+            <div class="form-section-title"><div class="form-step">4</div><div><h2>Program, speakers and sponsors</h2><p>Optional, but events with an agenda and speakers get more sign-ups. These open in the program manager and are saved to your draft.</p></div></div>
+            <div class="wiz-counts">
+                <div><strong th:text="${sessionCount}">0</strong><span>Sessions</span></div>
+                <div><strong th:text="${speakerCount}">0</strong><span>Speakers</span></div>
+                <div><strong th:text="${sponsorCount}">0</strong><span>Sponsors</span></div>
+            </div>
+            <div class="wiz-summary">
+                <span>Add your schedule, speaker profiles, sponsor logos and gallery photos, then come back to this wizard.</span>
+                <a class="primary-button" th:href="@{'/organizer/events/' + ${event.id} + '/program'}"><i class="bi bi-sliders"></i>Open program manager</a>
+            </div>
+            <div class="wiz-nav">
+                <a class="secondary-button" th:href="@{/organizer/events/{id}/wizard(id=${event.id},step=3)}"><i class="bi bi-arrow-left"></i>Back</a>
+                <span class="wiz-spacer"></span>
+                <a class="secondary-button" th:href="@{/organizer/events}"><i class="bi bi-save"></i>Save draft &amp; exit</a>
+                <a class="primary-button" th:href="@{/organizer/events/{id}/wizard(id=${event.id},step=5)}"><span>Continue</span><i class="bi bi-arrow-right"></i></a>
+            </div>
+        </section>
+
+        <section class="event-form-card wiz-card" th:if="${step == 6}">
+            <div class="form-section-title"><div class="form-step">6</div><div><h2>Review and publish</h2><p th:text="${approvalRequired ? 'Check everything, preview the page, then submit it for administrator approval.' : 'Check everything, preview the public page, then publish.'}">Check everything.</p></div></div>
+            <dl class="wiz-review">
+                <div><dt>Title</dt><dd th:text="${event.title ?: '—'}">—</dd></div>
+                <div><dt>Category</dt><dd th:text="${event.category ?: '—'}">—</dd></div>
+                <div><dt>Date &amp; time</dt><dd th:text="${event.date != null ? @display.eventDate(event) + ' · ' + @display.eventTime(event) : '—'}">—</dd></div>
+                <div><dt>Venue</dt><dd th:text="${event.location ?: '—'}">—</dd></div>
+                <div><dt>Capacity</dt><dd th:text="${event.capacity}">0</dd></div>
+                <div><dt>Pricing</dt><dd th:text="${@display.paid(event) ? @display.formattedBasePrice(event) + ' (demo checkout)' : 'Free'}">Free</dd></div>
+                <div><dt>Program</dt><dd th:text="${sessionCount + ' sessions · ' + speakerCount + ' speakers · ' + sponsorCount + ' sponsors · ' + #lists.size(ticketTypes) + ' ticket types'}">0</dd></div>
+            </dl>
+            <div class="wiz-check is-missing" th:if="${event.approvalNote != null}"><i class="bi bi-exclamation-circle-fill"></i><div><strong>Not approved last time</strong><span th:text="${event.approvalNote}">Reason</span></div></div>
+            <div class="wiz-check is-ok" th:if="${#lists.isEmpty(missing)}"><i class="bi bi-check-circle-fill"></i><span>Everything required is filled in.</span></div>
+            <div class="wiz-check is-missing" th:if="${!#lists.isEmpty(missing)}"><i class="bi bi-exclamation-circle-fill"></i><div><strong>Still needed before publishing</strong><ul><li th:each="m : ${missing}" th:text="${m}">Title</li></ul></div></div>
+            <div class="copilot-panel" th:if="${copilot != null}" th:classappend="${'is-' + copilot.tone}">
+                <div class="copilot-mini" th:style="${'--score:' + copilot.score}"><b th:text="${copilot.score}">0</b></div>
+                <div class="copilot-panel-body"><strong th:text="${'Copilot check: ' + copilot.level + ' (' + copilot.score + '/100)'}">Copilot check</strong>
+                    <ul th:if="${!#lists.isEmpty(copilot.topTips)}"><li th:each="tip : ${copilot.topTips}"><span th:text="${tip.tip}">Tip</span> <a th:href="${copilotLinks[tip.id]}">Fix</a></li></ul>
+                    <span th:if="${#lists.isEmpty(copilot.topTips)}">Every check passed.</span>
+                    <a class="copilot-more" th:href="@{'/organizer/events/' + ${event.id} + '/copilot'}">See the full checklist</a></div>
+            </div>
+            <div class="wiz-nav">
+                <a class="secondary-button" th:href="@{/organizer/events/{id}/wizard(id=${event.id},step=5)}"><i class="bi bi-arrow-left"></i>Back</a>
+                <span class="wiz-spacer"></span>
+                <a class="secondary-button" th:href="@{'/events/' + ${event.id}}" target="_blank" rel="noopener"><i class="bi bi-eye"></i>Preview</a>
+                <a class="secondary-button" th:href="@{/organizer/events}"><i class="bi bi-save"></i>Save draft &amp; exit</a>
+                <form th:if="${!approvalRequired}" th:action="@{'/organizer/events/' + ${event.id} + '/publish'}" method="post" class="inline-form confirm-form"
+                      th:attr="data-confirm-title='Publish ' + ${event.title} + '?',data-confirm='The event becomes public and open for registration.',data-confirm-action='Publish'">
+                    <button class="primary-button" type="submit" th:disabled="${!#lists.isEmpty(missing)}"><i class="bi bi-rocket-takeoff"></i>Publish event</button>
+                </form>
+                <form th:if="${approvalRequired}" th:action="@{'/organizer/events/' + ${event.id} + '/submit'}" method="post" class="inline-form confirm-form"
+                      th:attr="data-confirm-title='Submit ' + ${event.title} + ' for approval?',data-confirm='An administrator reviews it before it is published. The event is locked while it is under review.',data-confirm-action='Submit'">
+                    <button class="primary-button" type="submit" th:disabled="${!#lists.isEmpty(missing)}"><i class="bi bi-send-check"></i>Submit for approval</button>
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+<div th:replace="~{fragments :: toasts}"></div><div th:replace="~{fragments :: confirmModal}"></div>
+<script th:src="@{/js/site.js(v='2026.11.3')}" src="/js/site.js"></script>
+</body>
+</html>

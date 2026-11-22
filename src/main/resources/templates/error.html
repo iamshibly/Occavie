@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Page not available', 'public')}"></head>
+<body class="ov-page ov-err-page">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div th:replace="~{fragments :: siteNav('')}"></div>
+<main class="ov-auth-scene ov-err-scene" id="main-content">
+  <div class="ov-auth-bg" aria-hidden="true">
+    <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span>
+    <i class="orb o1"></i><i class="orb o2"></i>
+  </div>
+  <div class="ov-container ov-err-wrap">
+    <section class="ov-err-card" aria-labelledby="errTitle">
+      <p class="ov-err-code" aria-hidden="true" th:text="${status != null ? status : 'Oops'}">404</p>
+      <div class="ov-err-icon" aria-hidden="true"><i class="bi" th:classappend="${status == 404} ? 'bi-compass' : 'bi-exclamation-triangle'"></i></div>
+      <span class="ov-eyebrow" th:text="${status != null ? status + ' ERROR' : 'OCCAVIE'}">404 ERROR</span>
+      <h1 id="errTitle" th:if="${status == 404}">We could not find that page.</h1>
+      <h1 id="errTitle" th:if="${status != 404}">Something went wrong.</h1>
+      <p th:if="${status == 404}">The link may be old, or the event may have been removed. Try exploring current events instead.</p>
+      <p th:if="${status != 404}">We could not load this page. Please try again in a moment.</p>
+      <div class="ov-err-actions"><a class="ov-gold-button ov-auth-submit" th:href="@{/events}" href="/events"><i class="bi bi-compass" aria-hidden="true"></i> Explore events</a><a class="ov-outline-button" th:href="@{/}" href="/"><i class="bi bi-house" aria-hidden="true"></i> Back to Occavie</a></div>
+      <div class="ov-err-links" aria-label="Popular pages"><span>Popular:</span><a th:href="@{/events(ask='free events this weekend')}" href="/events">Free this weekend</a><a th:href="@{/about}" href="/about">About</a><a th:href="@{/contact}" href="/contact">Contact support</a></div>
+    </section>
+  </div>
+</main>
+<div th:replace="~{fragments :: siteFooter}"></div>
+<script th:src="@{/js/site.js(v='2026.11.5')}" src="/js/site.js"></script>
+</body>
+</html>

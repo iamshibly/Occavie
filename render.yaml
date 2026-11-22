@@ -1,0 +1,40 @@
+# Render Blueprint. Create it with: Dashboard -> New -> Blueprint -> pick this repository.
+# Secrets are NOT stored here: every `sync: false` value is typed into the Render dashboard.
+services:
+  - type: web
+    name: occavie
+    runtime: docker
+    plan: free            # free instances sleep and lose in-memory sessions; use at least starter for a real demo
+    healthCheckPath: /readyz
+    autoDeploy: true
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: MONGODB_URI            # MongoDB Atlas connection string
+        sync: false
+      - key: MONGODB_DATABASE
+        value: eventflow
+      - key: OCCAVIE_PUBLIC_URL     # https://<your-service>.onrender.com (no trailing slash)
+        sync: false
+      - key: OCCAVIE_REMEMBER_KEY   # 32+ random characters
+        generateValue: true
+      - key: OCCAVIE_TICKET_SECRET  # 32+ random characters, different from the key above
+        generateValue: true
+      - key: OCCAVIE_JOBS_TOKEN
+        generateValue: true
+      - key: OCCAVIE_BOOTSTRAP_ADMIN_EMAIL     # first start only; remove the password afterwards
+        sync: false
+      - key: OCCAVIE_BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
+      - key: OCCAVIE_SAMPLE_EVENTS              # true = fill an EMPTY database with sample events
+        value: "true"
+      - key: OCCAVIE_CONTACT_EMAIL              # shown on the Contact page and footer (optional)
+        sync: false
+      - key: OCCAVIE_CONTACT_WHATSAPP           # digits with country code (optional)
+        sync: false
+      - key: OCCAVIE_EMAIL_PROVIDER             # "resend" to enable email, otherwise "none"
+        value: none
+      - key: RESEND_API_KEY
+        sync: false
+      - key: OCCAVIE_EMAIL_FROM
+        sync: false

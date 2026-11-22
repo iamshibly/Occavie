@@ -9,6 +9,7 @@ public interface NotificationRepository extends MongoRepository<Notification, St
     List<Notification> findTop8ByUserIdOrderByCreatedAtDesc(String userId);
     List<Notification> findTop50ByUserIdOrderByCreatedAtDesc(String userId);
     List<Notification> findByUserIdAndReadFalse(String userId);
+    boolean existsByDedupeKey(String dedupeKey);
     long countByUserIdAndReadFalse(String userId);
     void deleteAllByUserId(String userId);
 }

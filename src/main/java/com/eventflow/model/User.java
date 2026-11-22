@@ -36,6 +36,17 @@ public class User {
 
     private String profileImageUrl;
 
+    /** Public organizer profile (all optional; only shown on /organizers/{id}). */
+    private String bio;
+    private String website;
+    private String publicContactEmail;
+
+    /** Notification preferences: essential booking emails are always sent; these two are optional. */
+    @Builder.Default
+    private boolean emailReminders = true;
+    @Builder.Default
+    private boolean emailAnnouncements = true;
+
 
 
 }

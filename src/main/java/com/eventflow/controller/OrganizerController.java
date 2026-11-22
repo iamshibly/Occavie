@@ -38,6 +38,7 @@ public class OrganizerController {
     private final FeedbackService feedbackService;
     private final EventProgramService eventProgramService;
     private final TicketTypeService ticketTypeService;
+    private final com.eventflow.service.ReadinessService readinessService;
 
 
 
@@ -54,40 +55,8 @@ public class OrganizerController {
         model.addAttribute("speakerCounts", eventProgramService.speakerCounts(events));
         model.addAttribute("sponsorCounts", eventProgramService.sponsorCounts(events));
         model.addAttribute("ticketCounts", ticketTypeService.ticketCounts(events));
+        model.addAttribute("readiness", readinessService.assessAll(events.stream().filter(e -> !"CANCELLED".equals(e.getStatus())).toList()));
         return "organizer-events";
-    }
-
-    @GetMapping("/organizer/events/new")
-    public String newEvent(Model model) {
-        model.addAttribute("event", Event.builder().build());
-        model.addAttribute("currentRegistrationCount", 0L);
-        model.addAttribute("pageTitle", "Create New Event");
-        model.addAttribute("submitLabel", "Create Event");
-        model.addAttribute("formAction", "/organizer/events");
-        model.addAttribute("today", LocalDate.now());
-        return "event-form";
-    }
-
-    @PostMapping("/organizer/events")
-    public String createEvent(Authentication authentication,
-                              @ModelAttribute EventForm form,
-                              RedirectAttributes redirectAttributes) {
-        User organizer = userService.currentUser(authentication);
-        try {
-            Event event = eventService.create(form, organizer);
-            for (User admin : userService.findByRole("ADMIN")) {
-                notificationService.notifyUser(
-                        admin.getId(),
-                        organizer.getFullName() + " created a new event: " + event.getTitle() + ".",
-                        "/events/" + event.getId()
-                );
-            }
-            redirectAttributes.addFlashAttribute("toastSuccess", "Event created successfully.");
-            return "redirect:/organizer/events";
-        } catch (IllegalArgumentException ex) {
-            redirectAttributes.addFlashAttribute("toastError", ex.getMessage());
-            return "redirect:/organizer/events/new";
-        }
     }
 
     @GetMapping("/organizer/events/{id}/edit")
@@ -96,6 +65,7 @@ public class OrganizerController {
         User organizer = userService.currentUser(authentication);
         try {
             Event event = eventService.findOwned(id, organizer);
+            if (!com.eventflow.service.EventRules.isPublished(event)) return "redirect:/organizer/events/" + id + "/wizard?step=1";
             eventService.requireEditable(event);
             model.addAttribute("event", event);
             model.addAttribute("currentRegistrationCount", registrationService.countByEvent(id));

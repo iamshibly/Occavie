@@ -154,6 +154,49 @@ public class AdminController {
         return "redirect:/admin/events";
     }
 
+    @GetMapping("/admin/approvals")
+    public String approvals(Model model) {
+        model.addAttribute("pending", eventService.pendingApprovals());
+        model.addAttribute("approvalRequired", eventService.isApprovalRequired());
+        return "admin-approvals";
+    }
+
+    @PostMapping("/admin/approvals/{id}/approve")
+    public String approve(@PathVariable String id, org.springframework.security.core.Authentication authentication,
+                          RedirectAttributes redirectAttributes) {
+        try {
+            eventService.approve(id, userService.currentUser(authentication));
+            redirectAttributes.addFlashAttribute("toastSuccess", "Event approved and published.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("toastError", ex.getMessage());
+        }
+        return "redirect:/admin/approvals";
+    }
+
+    @PostMapping("/admin/approvals/{id}/reject")
+    public String reject(@PathVariable String id, @RequestParam(defaultValue = "") String reason,
+                         org.springframework.security.core.Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            eventService.reject(id, reason, userService.currentUser(authentication));
+            redirectAttributes.addFlashAttribute("toastSuccess", "Event rejected. The organizer was notified.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("toastError", ex.getMessage());
+        }
+        return "redirect:/admin/approvals";
+    }
+
+    @PostMapping("/admin/events/{id}/cancel")
+    public String cancelEvent(@PathVariable String id, @RequestParam(required = false) String reason,
+                              RedirectAttributes redirectAttributes) {
+        try {
+            eventService.cancelAsAdmin(id, reason);
+            redirectAttributes.addFlashAttribute("toastSuccess", "Event cancelled. Registered participants were notified.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("toastError", ex.getMessage());
+        }
+        return "redirect:/admin/events";
+    }
+
     @GetMapping("/admin/past-events")
     public String pastEvents(Model model) {
         List<Event> events = eventService.findCompletedAll();

@@ -20,7 +20,13 @@ public record DashboardAnalytics(
         List<Long> categoryValues,
         List<String> topEventLabels,
         List<Long> topEventValues,
-        List<Long> ratingValues
+        List<Long> ratingValues,
+        long totalEvents,
+        long cancelledRegistrations,
+        long checkedIn,
+        int attendancePercent,
+        List<String> ticketLabels,
+        List<Long> ticketValues
 ) {
     public DashboardAnalytics {
         ticketValue = ticketValue == null ? BigDecimal.ZERO : ticketValue;

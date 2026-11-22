@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<!--
+  Occavie shared fragments.
+  head(title, scope)  scope = public | app | all (+picker adds flatpickr CSS) -> selects the stylesheet bundle
+  siteNav(active)     public navigation (guests and signed-in users)
+  siteFooter          public footer
+  topbar / sidebar    signed-in workspace shell (Admin, Organizer, Participant)
+-->
+<head th:fragment="head(title, scope)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#0B1530">
+    <meta name="description" th:content="${ogDescription ?: 'Occavie - Make every moment count. Discover, book and manage events in one place.'}">
+    <meta name="robots" content="noindex, nofollow" th:if="${#strings.contains(scope, 'app')}">
+    <link rel="canonical" th:if="${canonicalUrl != null and !#strings.contains(scope, 'app')}" th:href="${canonicalUrl}">
+    <meta property="og:type" th:content="${ogType ?: 'website'}">
+    <meta property="og:site_name" content="Occavie">
+    <meta property="og:title" th:content="${ogTitle ?: 'Occavie | ' + title}">
+    <meta property="og:description" th:content="${ogDescription ?: 'Make every moment count.'}">
+    <meta property="og:url" th:if="${canonicalUrl != null}" th:content="${canonicalUrl}">
+    <meta property="og:image" th:if="${siteUrl != null}" th:content="${ogImage ?: siteUrl + '/images/og-default.png'}">
+    <meta property="og:image:width" content="1200" th:if="${ogImage == null}">
+    <meta property="og:image:height" content="630" th:if="${ogImage == null}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" th:content="${ogTitle ?: 'Occavie | ' + title}">
+    <meta name="twitter:description" th:content="${ogDescription ?: 'Make every moment count.'}">
+    <meta name="twitter:image" th:if="${siteUrl != null}" th:content="${ogImage ?: siteUrl + '/images/og-default.png'}">
+    <title th:text="'Occavie | ' + ${title}">Occavie</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/images/favicon.svg}" href="/images/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/images/favicon-32.png}" href="/images/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/images/favicon-16.png}" href="/images/favicon-16.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" th:href="@{/images/apple-touch-icon.png}" href="/images/apple-touch-icon.png">
+    <link rel="manifest" th:href="@{/site.webmanifest}" href="/site.webmanifest">
+    <script>
+        /* Apply the saved theme before first paint to avoid a light/dark flash. */
+        (function () {
+            try {
+                var saved = localStorage.getItem('occavieTheme') || localStorage.getItem('eventflowPublicTheme');
+                var dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+            } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@600;700;800&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/occavie-core.css(v='2026.11.2')}" href="/css/occavie-core.css">
+    <link rel="stylesheet" th:if="${#strings.contains(scope, 'public') or #strings.contains(scope, 'all')}" th:href="@{/css/occavie-public.css(v='2026.11.2')}" href="/css/occavie-public.css">
+    <link rel="stylesheet" th:if="${#strings.contains(scope, 'app') or #strings.contains(scope, 'all')}" th:href="@{/css/occavie-app.css(v='2026.11.2')}" href="/css/occavie-app.css">
+    <link rel="stylesheet" th:if="${#strings.contains(scope, 'picker')}" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+</head>
+<body>
+
+<!-- ============ Signed-in workspace shell ============ -->
+<header class="topbar" th:fragment="topbar">
+    <div class="topbar-inner">
+        <button class="mobile-menu-button" id="sidebarToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="appSidebar">
+            <i class="bi bi-list"></i>
+        </button>
+        <a class="brand brand-compact" th:href="@{/dashboard}" aria-label="Occavie dashboard">
+            <img class="brand-mark" th:src="@{/images/occavie-mark.svg}" src="/images/occavie-mark.svg" alt="" width="34" height="34">
+            <span class="brand-word">Occa<em>vie</em></span>
+        </a>
+        <div class="topbar-spacer"></div>
+        <a class="topbar-site-link" th:href="@{/events}" title="Browse public events"><i class="bi bi-compass"></i><span>Browse events</span></a>
+        <button class="top-icon-button" type="button" data-theme-toggle aria-label="Switch theme" title="Switch theme"><i class="bi bi-moon-stars"></i></button>
+        <div class="notification-wrap">
+            <button class="top-icon-button" id="notificationToggle" type="button" aria-label="Notifications">
+                <i class="bi bi-bell"></i>
+                <span class="notification-badge" th:if="${unreadCount != null and unreadCount > 0}" th:text="${unreadCount > 99 ? '99+' : unreadCount}">3</span>
+            </button>
+            <div class="notification-panel" id="notificationPanel">
+                <div class="notification-panel-head">
+                    <div><strong>Notifications</strong><span th:text="${unreadCount != null ? unreadCount + ' unread' : '0 unread'}">0 unread</span></div>
+                    <a th:href="@{/notifications}">View all</a>
+                </div>
+                <div class="notification-preview-list" id="notificationPreviewList" data-preview-url="/notifications/preview" aria-live="polite">
+                    <div class="notification-empty"><i class="bi bi-bell"></i><span>Open to view notifications.</span></div>
+                </div>
+            </div>
+        </div>
+        <a class="user-chip user-chip-link" th:href="@{/profile}" title="Open profile">
+            <img class="avatar avatar-image" th:src="${currentUser.profileImageUrl != null ? currentUser.profileImageUrl : '/images/default-avatar.png'}" src="/images/default-avatar.png" alt="Profile picture">
+            <div class="user-meta">
+                <strong th:text="${currentUser.fullName}">User</strong>
+                <span th:text="${currentUser.role}">ROLE</span>
+            </div>
+        </a>
+    </div>
+</header>
+
+<aside class="app-sidebar" id="appSidebar" th:fragment="sidebar(active)">
+    <a class="sidebar-brand" th:href="@{/dashboard}" aria-label="Occavie dashboard">
+        <img class="brand-mark" th:src="@{/images/occavie-mark.svg}" src="/images/occavie-mark.svg" alt="" width="38" height="38">
+        <span><strong>Occavie</strong><small>Make every moment count</small></span>
+    </a>
+    <nav class="sidebar-nav" aria-label="Workspace">
+        <span class="sidebar-group">Workspace</span>
+        <a th:href="@{/dashboard}" th:classappend="${active == 'dashboard'} ? ' active' : ''"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+        <a th:if="${currentUser.role == 'PARTICIPANT'}" th:href="@{/events}" th:classappend="${active == 'events'} ? ' active' : ''"><i class="bi bi-search"></i><span>Explore Events</span></a>
+
+        <th:block th:if="${currentUser.role == 'PARTICIPANT'}">
+            <a th:href="@{/participant/registrations}" th:classappend="${active == 'registrations'} ? ' active' : ''"><i class="bi bi-ticket-perforated"></i><span>My Registrations</span></a>
+        </th:block>
+
+        <th:block th:if="${currentUser.role == 'ORGANIZER'}">
+            <a th:href="@{/organizer/events}" th:classappend="${active == 'myevents'} ? ' active' : ''"><i class="bi bi-calendar2-week"></i><span>My Events</span></a>
+            <a th:href="@{/organizer/events/new}" th:classappend="${active == 'create'} ? ' active' : ''"><i class="bi bi-plus-square"></i><span>Create Event</span></a>
+            <a th:href="@{/organizer/bookings}" th:classappend="${active == 'bookings'} ? ' active' : ''"><i class="bi bi-ticket-perforated"></i><span>Booking Management</span></a>
+            <a th:href="@{/organizer/coupons}" th:classappend="${active == 'coupons'} ? ' active' : ''"><i class="bi bi-percent"></i><span>Coupons</span></a>
+            <a th:href="@{/organizer/past-events}" th:classappend="${active == 'past-events'} ? ' active' : ''"><i class="bi bi-clock-history"></i><span>Past Events</span></a>
+            <a th:href="@{/organizer/feedback}" th:classappend="${active == 'feedback'} ? ' active' : ''"><i class="bi bi-star"></i><span>Feedback &amp; Ratings</span></a>
+        </th:block>
+
+        <th:block th:if="${currentUser.role == 'ADMIN'}">
+            <a th:href="@{/admin/users}" th:classappend="${active == 'users'} ? ' active' : ''"><i class="bi bi-people"></i><span>Users</span></a>
+            <a th:href="@{/admin/approvals}" th:classappend="${active == 'approvals'} ? ' active' : ''"><i class="bi bi-patch-check"></i><span>Approvals</span><em th:if="${pendingApprovalCount != null and pendingApprovalCount > 0}" th:text="${pendingApprovalCount}">1</em></a>
+            <a th:href="@{/admin/events}" th:classappend="${active == 'manage-events'} ? ' active' : ''"><i class="bi bi-calendar-check"></i><span>Manage Events</span></a>
+            <a th:href="@{/admin/registrations}" th:classappend="${active == 'bookings'} ? ' active' : ''"><i class="bi bi-ticket-perforated"></i><span>Booking Management</span></a>
+            <a th:href="@{/admin/coupons}" th:classappend="${active == 'coupons'} ? ' active' : ''"><i class="bi bi-percent"></i><span>Coupons</span></a>
+            <a th:href="@{/admin/past-events}" th:classappend="${active == 'past-events'} ? ' active' : ''"><i class="bi bi-clock-history"></i><span>Past Events</span></a>
+            <a th:href="@{/admin/feedback}" th:classappend="${active == 'feedback'} ? ' active' : ''"><i class="bi bi-star"></i><span>Feedback &amp; Ratings</span></a>
+            <a th:href="@{/admin/contact-requests}" th:classappend="${active == 'contact-requests'} ? ' active' : ''"><i class="bi bi-chat-left-text"></i><span>Contact Requests</span><em th:if="${newContactRequestCount != null and newContactRequestCount > 0}" th:text="${newContactRequestCount}">1</em></a>
+        </th:block>
+
+        <span class="sidebar-group">Account</span>
+        <a th:if="${currentUser.role != 'ADMIN'}" th:href="@{/contact}" th:classappend="${active == 'contact'} ? ' active' : ''"><i class="bi bi-headset"></i><span>Contact Support</span></a>
+        <a th:href="@{/profile}" th:classappend="${active == 'profile'} ? ' active' : ''"><i class="bi bi-person-circle"></i><span>Profile</span></a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="sidebar-role"><span th:text="${currentUser.role}">PARTICIPANT</span></div>
+        <form class="sidebar-logout confirm-form" th:action="@{/logout}" method="post"
+              data-confirm-title="Log Out?"
+              data-confirm="Are you sure you want to log out of Occavie?"
+              data-confirm-action="Log Out">
+            <button type="submit"><i class="bi bi-box-arrow-right"></i><span>Logout</span></button>
+        </form>
+    </div>
+</aside>
+
+<div class="toast-stack" th:fragment="toasts">
+    <div class="app-toast success" th:if="${toastSuccess}"><i class="bi bi-check-circle-fill"></i><span th:text="${toastSuccess}">Success</span><button type="button" aria-label="Close">×</button></div>
+    <div class="app-toast error" th:if="${toastError}"><i class="bi bi-exclamation-circle-fill"></i><span th:text="${toastError}">Error</span><button type="button" aria-label="Close">×</button></div>
+    <script th:src="@{/js/event-image-fallback.js(v='2026.11.2')}" src="/js/event-image-fallback.js"></script>
+</div>
+
+<div class="confirm-modal" id="confirmModal" th:fragment="confirmModal">
+    <div class="confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+        <div class="confirm-icon" aria-hidden="true"><i class="bi bi-exclamation-triangle"></i></div>
+        <h3 id="confirmTitle">Confirm action</h3>
+        <p id="confirmMessage">Are you sure you want to continue?</p>
+        <div class="confirm-actions">
+            <button class="secondary-button" id="confirmCancel" type="button">Cancel</button>
+            <button class="danger-button" id="confirmProceed" type="button">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ Public site navigation ============ -->
+<header class="ov-header" th:fragment="siteNav(active)">
+    <div class="ov-container ov-header-inner">
+        <a class="brand" th:href="@{/}" href="/" aria-label="Occavie home">
+            <img class="brand-mark" th:src="@{/images/occavie-mark.svg}" src="/images/occavie-mark.svg" alt="" width="38" height="38">
+            <span class="brand-word">Occa<em>vie</em></span>
+        </a>
+        <nav class="ov-main-nav" aria-label="Main navigation">
+            <a th:href="@{/}" href="/" th:classappend="${active == 'home'} ? ' is-active' : ''">Home</a>
+            <a th:href="@{/events}" href="/events" th:classappend="${active == 'events'} ? ' is-active' : ''">Explore Events</a>
+            <a th:href="@{/about}" href="/about" th:classappend="${active == 'about'} ? ' is-active' : ''">About</a>
+        </nav>
+        <div class="ov-header-actions">
+            <button class="ov-icon-button" type="button" data-theme-toggle aria-label="Switch theme" title="Switch theme"><i class="bi bi-moon-stars"></i></button>
+            <th:block th:if="${currentUser == null and user == null}">
+                <a class="ov-login" th:href="@{/login}" th:classappend="${active == 'auth'} ? ' is-current' : ''">Login</a>
+                <a class="ov-signup" th:href="@{/register}">Sign Up</a>
+            </th:block>
+            <a class="ov-signup" th:if="${currentUser != null or user != null}" th:href="@{/dashboard}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+        </div>
+    </div>
+</header>
+
+<!-- ============ Public footer ============ -->
+<footer class="ov-footer" th:fragment="siteFooter">
+    <div class="ov-container ov-footer-grid">
+        <div class="ov-footer-brand">
+            <a class="brand" th:href="@{/}" href="/" aria-label="Occavie home">
+                <img class="brand-mark" th:src="@{/images/occavie-mark.svg}" src="/images/occavie-mark.svg" alt="" width="38" height="38">
+                <span class="brand-word">Occa<em>vie</em></span>
+            </a>
+            <p class="ov-footer-tagline">Make every moment count.</p>
+            <p class="ov-footer-copy">Discover events, book tickets and run unforgettable experiences — all in one place.</p>
+        </div>
+        <nav class="ov-footer-col" aria-label="Explore">
+            <h3>Explore</h3>
+            <a th:href="@{/events}" href="/events">All events</a>
+            <a th:href="@{/events(category='Technology')}" href="/events?category=Technology">Technology</a>
+            <a th:href="@{/events(category='Business')}" href="/events?category=Business">Business</a>
+            <a th:href="@{/events(category='Music')}" href="/events?category=Music">Music</a>
+        </nav>
+        <nav class="ov-footer-col" aria-label="Account">
+            <h3>Account</h3>
+            <a th:href="@{/login}" href="/login">Log in</a>
+            <a th:href="@{/register}" href="/register">Create account</a>
+            <a th:href="@{/contact}" href="/contact">Contact support</a>
+        </nav>
+        <div class="ov-footer-col ov-footer-dev" th:with="devName=${@site.developerName},devUrl=${@site.developerUrl},devMail=${@site.contactEmail},devWa=${@site.contactWhatsapp},devFb=${@site.facebookUrl},devLi=${@site.linkedinUrl}">
+            <h3>Developed by</h3>
+            <strong th:text="${devName}">Developer</strong>
+            <div class="ov-footer-social">
+                <a th:href="${devUrl}" href="https://github.com/iamshibly" target="_blank" rel="noopener noreferrer" aria-label="Developer on GitHub" title="GitHub"><i class="bi bi-github"></i></a>
+                <a th:if="${!#strings.isEmpty(devWa)}" th:href="${'https://wa.me/' + devWa}" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                <a th:if="${!#strings.isEmpty(devFb)}" th:href="${devFb}" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook"><i class="bi bi-facebook"></i></a>
+                <a th:if="${!#strings.isEmpty(devLi)}" th:href="${devLi}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                <a th:if="${!#strings.isEmpty(devMail)}" th:href="${'mailto:' + devMail}" aria-label="Email" title="Email"><i class="bi bi-envelope-fill"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="ov-container ov-footer-bottom">
+        <span>© 2026 Occavie. All rights reserved.</span>
+        <span>Make every moment count.</span>
+    </div>
+    <script th:src="@{/js/event-image-fallback.js(v='2026.11.2')}" src="/js/event-image-fallback.js"></script>
+    <script th:src="@{/js/smart-search.js}" src="/js/smart-search.js" defer></script>
+    <script th:src="@{/js/concierge-core.js}" src="/js/concierge-core.js" defer></script>
+    <script th:src="@{/js/concierge.js}" src="/js/concierge.js" defer></script>
+</footer>
+</body>
+</html>

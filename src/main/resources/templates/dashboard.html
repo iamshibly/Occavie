@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Dashboard', 'app')}"></head>
+<body class="ef-workspace">
+<div th:replace="~{fragments :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('dashboard')}"></div>
+    <main class="app-main">
+        <section class="page-heading dashboard-heading dash-photo-hero">
+            <div class="ov-auth-bg dash-hero-bg" aria-hidden="true">
+                <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span>
+                <i class="orb o1"></i><i class="orb o2"></i>
+            </div>
+            <div>
+                <span class="role-label" th:text="${user.role}">PARTICIPANT</span>
+                <h1><span id="dashGreeting">Welcome back</span>, <span class="dash-name" th:text="${user.fullName}">Name</span></h1>
+                <p th:if="${user.role == 'PARTICIPANT'}">Keep track of your registrations and discover what is happening next.</p>
+                <p th:if="${user.role == 'ORGANIZER'}">Manage your events, registrations and participant activity from one place.</p>
+                <p th:if="${user.role == 'ADMIN'}">Monitor users, events and registrations across Occavie.</p>
+                <p class="dash-today"><i class="bi bi-calendar3" aria-hidden="true"></i> <span id="dashToday">Today</span></p>
+            </div>
+            <a class="primary-button" th:if="${user.role == 'ORGANIZER'}" th:href="@{/organizer/events/new}"><i class="bi bi-plus-lg"></i>Create Event</a>
+        </section>
+
+
+        <nav class="quick-actions" aria-label="Quick actions" th:if="${user.role == 'ORGANIZER'}">
+            <a th:href="@{/organizer/events/new}"><i class="bi bi-plus-square"></i><span>Create event</span></a>
+            <a th:href="@{/organizer/events}"><i class="bi bi-calendar2-week"></i><span>Programs &amp; tickets</span></a>
+            <a th:href="@{/organizer/bookings}"><i class="bi bi-people"></i><span>Participants &amp; bookings</span></a>
+            <a th:href="@{/organizer/coupons}"><i class="bi bi-percent"></i><span>Coupons</span></a>
+            <a th:href="@{/organizer/feedback}"><i class="bi bi-star"></i><span>Feedback</span></a>
+        </nav>
+        <nav class="quick-actions" aria-label="Quick actions" th:if="${user.role == 'ADMIN'}">
+            <a th:href="@{/admin/users}"><i class="bi bi-people"></i><span>Users &amp; roles</span></a>
+            <a th:href="@{/admin/events}"><i class="bi bi-calendar-check"></i><span>Events</span></a>
+            <a th:href="@{/admin/registrations}"><i class="bi bi-ticket-perforated"></i><span>Registrations</span></a>
+            <a th:href="@{/admin/coupons}"><i class="bi bi-percent"></i><span>Coupons</span></a>
+            <a th:href="@{/admin/feedback}"><i class="bi bi-star"></i><span>Review moderation</span></a>
+            <a th:href="@{/admin/contact-requests}"><i class="bi bi-chat-left-text"></i><span>Support requests</span></a>
+        </nav>
+        <nav class="quick-actions" aria-label="Quick actions" th:if="${user.role == 'PARTICIPANT'}">
+            <a th:href="@{/events}"><i class="bi bi-search"></i><span>Explore events</span></a>
+            <a th:href="@{/participant/registrations}"><i class="bi bi-ticket-perforated"></i><span>My tickets</span></a>
+            <a th:href="@{/notifications}"><i class="bi bi-bell"></i><span>Notifications</span></a>
+            <a th:href="@{/profile}"><i class="bi bi-person-circle"></i><span>Profile &amp; settings</span></a>
+            <a th:href="@{/contact}"><i class="bi bi-headset"></i><span>Support</span></a>
+        </nav>
+
+        <section class="metric-grid" th:classappend="${user.role == 'PARTICIPANT'} ? ' ef-participant-metrics' : ''">
+            <article class="metric-card" th:if="${user.role != 'PARTICIPANT'}"><div class="metric-icon"><i class="bi bi-calendar2-event"></i></div><div><span th:text="${metricOneLabel}">Metric</span><strong th:text="${metricOneValue}">0</strong></div></article>
+            <article class="metric-card" th:if="${user.role != 'PARTICIPANT'}"><div class="metric-icon"><i class="bi bi-clock-history"></i></div><div><span th:text="${metricTwoLabel}">Metric</span><strong th:text="${metricTwoValue}">0</strong></div></article>
+            <article class="metric-card"><div class="metric-icon"><i class="bi bi-people"></i></div><div><span th:text="${metricThreeLabel}">Metric</span><strong th:text="${metricThreeValue}">0</strong></div></article>
+            <article class="metric-card"><div class="metric-icon"><i class="bi bi-check2-circle"></i></div><div><span th:text="${metricFourLabel}">Metric</span><strong th:text="${metricFourValue}">0</strong></div></article>
+        </section>
+
+        <section class="surface-card copilot-attention" th:if="${user.role == 'ORGANIZER' and copilotAttention != null and !#lists.isEmpty(copilotAttention)}" aria-labelledby="copAttn">
+            <div class="surface-heading"><div><span class="section-kicker">EVENT COPILOT</span><h2 id="copAttn">Events that need attention</h2></div><a th:href="@{/organizer/events}">All events</a></div>
+            <ul class="copilot-attn-list">
+                <li th:each="e : ${copilotAttention}" th:with="r=${copilotScores[e.id]}">
+                    <span class="copilot-mini" th:classappend="${'is-' + r.tone}" th:style="${'--score:' + r.score}"><b th:text="${r.score}">0</b></span>
+                    <span><strong th:text="${e.title}">Event</strong><small th:text="${r.topTips[0].tip}">Tip</small></span>
+                    <a class="secondary-button" th:href="@{'/organizer/events/' + ${e.id} + '/copilot'}">Open Copilot</a>
+                </li>
+            </ul>
+        </section>
+
+        <section class="dash-cards" th:if="${cardEvents != null and !#lists.isEmpty(cardEvents)}" aria-labelledby="dashCardsHeading">
+            <div class="dash-cards-head">
+                <div><span class="section-kicker">EXPLORE</span><h2 id="dashCardsHeading" th:text="${cardHeading}">Recommended for you</h2><p th:text="${cardSubheading}">Subheading</p>
+                    <p class="why-legend" th:if="${cardWhy != null and !cardWhy.isEmpty()}"><i class="bi bi-lightbulb-fill" aria-hidden="true"></i> The light bulb on a card tells you why we picked it. Hover or tap it.</p></div>
+                <a class="secondary-button" th:href="${user.role == 'ADMIN' ? '/admin/events' : (user.role == 'ORGANIZER' ? '/organizer/events' : '/events')}" href="/events">View all <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+            </div>
+            <div class="dash-card-grid">
+                <div class="dash-card-wrap" th:each="event : ${cardEvents}">
+                <a class="dash-card" th:href="${user.role == 'PARTICIPANT' ? '/events/' + event.id : (user.role == 'ORGANIZER' ? '/organizer/events/' + event.id + '/participants' : '/events/' + event.id)}" href="/events">
+                    <span class="dash-card-photo" th:with="efCover=${@display.listingImageUrl(event)}">
+                        <img data-event-image th:attr="data-event-category=${event.category}" th:src="${efCover}" src="/images/event-visual.png" th:alt="${event.title + ' cover image'}" alt="Event cover" width="480" height="300" loading="lazy" decoding="async">
+                        <span class="dash-card-tag" th:attr="data-cat=${event.category}" th:text="${event.category}">Technology</span>
+                    </span>
+                    <span class="dash-card-body">
+                        <span class="dash-card-date"><i class="bi bi-calendar3" aria-hidden="true"></i> <span th:text="${@display.eventDate(event)}">Date</span></span>
+                        <strong th:text="${event.title}">Event title</strong>
+                        <span class="dash-card-meta"><i class="bi bi-geo-alt" aria-hidden="true"></i> <span th:text="${event.location}">Venue</span></span>
+                        <span class="dash-card-price" th:text="${cardPrices[event.id]}">Free</span>
+                    </span>
+                </a>
+                <div class="why-wrap" th:if="${cardWhy != null and cardWhy[event.id] != null and !cardWhy[event.id].isEmpty()}">
+                    <button class="why-bulb" type="button" aria-expanded="false" th:attr="aria-label=${'Why we picked this: ' + #strings.listJoin(cardWhy[event.id], '; ')}"><i class="bi bi-lightbulb-fill" aria-hidden="true"></i></button>
+                    <div class="why-pop" aria-hidden="true"><strong>Why this pick</strong><ul><li th:each="reason : ${cardWhy[event.id]}" th:text="${reason}">Reason</li></ul></div>
+                </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <section class="analytics-section" th:if="${(user.role == 'ADMIN' or user.role == 'ORGANIZER') and analytics != null}">
+            <div class="analytics-heading">
+                <div><span class="section-kicker">PERFORMANCE</span><h2>Event Analytics</h2><p th:text="${user.role == 'ADMIN' ? 'Platform-wide event performance and booking insights.' : 'Performance across your events, tickets and participant activity.'}">Analytics</p></div>
+            </div>
+
+            <div class="analytics-kpi-grid">
+                <article class="analytics-kpi"><div class="analytics-kpi-icon"><i class="bi bi-ticket-perforated"></i></div><div><span>Total bookings</span><strong th:text="${analytics.totalBookings}">0</strong><small>Across selected events</small></div></article>
+                <article class="analytics-kpi"><div class="analytics-kpi-icon"><i class="bi bi-pie-chart"></i></div><div><span>Capacity used</span><strong th:text="${analytics.capacityUsagePercent + '%'}">0%</strong><small>Booked seats vs capacity</small></div></article>
+                <article class="analytics-kpi"><div class="analytics-kpi-icon"><i class="bi bi-cash-stack"></i></div><div><span>Simulated ticket value</span><strong th:text="${@display.formattedTicketValue(analytics.ticketValue)}">৳0</strong><small th:text="${'Demo bookings, not revenue · ' + analytics.couponUses + ' discounted'}">Demo bookings, not revenue</small></div></article>
+                <article class="analytics-kpi"><div class="analytics-kpi-icon"><i class="bi bi-star-fill"></i></div><div><span>Average rating</span><strong th:text="${analytics.totalReviews > 0 ? #numbers.formatDecimal(analytics.averageRating,1,1) + '/5' : '—'}">—</strong><small th:text="${analytics.totalReviews + ' participant review(s)'}">0 reviews</small></div></article>
+            </div>
+
+            <div class="analytics-kpi-grid">
+                <article class="analytics-kpi"><div class="analytics-kpi-icon"><i class="bi bi-calendar-event"></i></div><div><span>Events</span><strong th:text="${analytics.totalEvents}">0</strong><small th:text="${analytics.completedEvents + ' completed'}">0 completed</small></div></article>
+                <article class="analytics-kpi"><div class="analytics-kpi-icon"><i class="bi bi-x-circle"></i></div><div><span>Cancelled registrations</span><strong th:text="${analytics.cancelledRegistrations}">0</strong><small>Counted since this feature was added</small></div></article>
+                <article class="analytics-kpi"><div class="analytics-kpi-icon"><i class="bi bi-qr-code-scan"></i></div><div><span>Checked in</span><strong th:text="${analytics.checkedIn}">0</strong><small th:text="${analytics.attendancePercent + '% of bookings attended'}">0%</small></div></article>
+                <article class="analytics-kpi"><div class="analytics-kpi-icon"><i class="bi bi-tags"></i></div><div><span>Ticket categories</span><strong th:text="${#lists.size(analytics.ticketLabels)}">0</strong><small th:text="${#lists.isEmpty(analytics.ticketLabels) ? 'No bookings yet' : #strings.listJoin(analytics.ticketLabels, ', ')}">None</small></div></article>
+            </div>
+
+            <div class="analytics-chart-grid">
+                <article class="analytics-chart-card analytics-chart-wide">
+                    <div class="analytics-card-head"><div><span>REGISTRATION TREND</span><h3>Bookings over the last 6 months</h3></div><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="analytics-chart-wrap"><canvas id="registrationTrendChart"></canvas></div>
+                </article>
+                <article class="analytics-chart-card">
+                    <div class="analytics-card-head"><div><span>EVENT MIX</span><h3>Events by category</h3></div><i class="bi bi-grid"></i></div>
+                    <div class="analytics-chart-wrap compact"><canvas id="categoryChart"></canvas></div>
+                </article>
+                <article class="analytics-chart-card">
+                    <div class="analytics-card-head"><div><span>TOP EVENTS</span><h3>Most booked events</h3></div><i class="bi bi-trophy"></i></div>
+                    <div class="analytics-chart-wrap compact"><canvas id="topEventsChart"></canvas></div>
+                </article>
+                <article class="analytics-chart-card">
+                    <div class="analytics-card-head"><div><span>RATINGS</span><h3>Participant rating distribution</h3></div><i class="bi bi-star"></i></div>
+                    <div class="analytics-rating-bars">
+                        <div th:each="rating,iter : ${analytics.ratingValues}"><span th:text="${5 - iter.index + '★'}">5★</span><div><i th:style="|width:${analytics.totalReviews > 0 ? (rating * 100 / analytics.totalReviews) : 0}%|"></i></div><strong th:text="${rating}">0</strong></div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="dashboard-content-grid ef-single-column">
+            <article class="surface-card large-surface">
+                <div class="surface-heading">
+                    <div><span class="section-kicker" th:text="${user.role == 'PARTICIPANT' ? 'YOUR SCHEDULE' : (user.role == 'ORGANIZER' ? 'YOUR EVENTS' : 'PLATFORM EVENTS')}">EVENTS</span><h2 th:text="${user.role == 'PARTICIPANT' ? 'Upcoming registrations' : (user.role == 'ORGANIZER' ? 'Recent events' : 'Upcoming events')}">Upcoming events</h2></div>
+                    <a th:if="${user.role == 'PARTICIPANT'}" th:href="@{/participant/registrations}">View all</a>
+                    <a th:if="${user.role == 'ORGANIZER'}" th:href="@{/organizer/events}">View all</a>
+                    <a th:if="${user.role == 'ADMIN'}" th:href="@{/admin/events}">View all</a>
+                </div>
+
+                <div class="dashboard-event-list" th:if="${dashboardEvents != null and !#lists.isEmpty(dashboardEvents)}">
+                    <div class="dashboard-event-row" th:each="event : ${dashboardEvents}">
+                        <img data-event-image th:attr="data-event-category=${event.category}" th:with="efListingImage=${@display.listingImageUrl(event)}" th:src="${efListingImage}" src="/images/event-visual.png" alt="Event image" loading="lazy" decoding="async">
+                        <div class="dashboard-event-main">
+                            <strong th:text="${event.title}">Event title</strong>
+                            <span><i class="bi bi-calendar3"></i><span th:text="${@display.eventDate(event) + ' · ' + @display.eventTime(event)}">Date</span></span>
+                            <span><i class="bi bi-geo-alt"></i><span th:text="${event.location}">Location</span></span>
+                        </div>
+                        <div class="dashboard-event-side">
+                            <span class="status-badge" th:text="${user.role == 'PARTICIPANT' ? 'CONFIRMED' : @display.status(event)}">UPCOMING</span>
+                            <small th:if="${user.role != 'PARTICIPANT'}" th:text="${registrationCounts != null ? registrationCounts[event.id] + ' registered' : event.category}">0 registered</small>
+                        </div>
+                        <a class="ef-event-link" th:href="@{'/events/' + ${event.id}}">View Details <i class="bi bi-chevron-right"></i></a>
+                    </div>
+                </div>
+                <div class="clean-empty" th:if="${dashboardEvents == null or #lists.isEmpty(dashboardEvents)}">
+                    <i class="bi bi-calendar2-x"></i><h3>Nothing here yet</h3><p th:if="${user.role == 'PARTICIPANT'}">Register for an event and it will appear here.</p><p th:if="${user.role == 'ORGANIZER'}">Create your first event to start managing registrations.</p>
+                </div>
+            </article>
+
+
+        </section>
+
+        <section class="dashboard-content-grid" th:if="${user.role == 'PARTICIPANT'}">
+            <article class="surface-card large-surface">
+                <div class="surface-heading"><div><span class="section-kicker">BOOKMARKS</span><h2>Saved events</h2></div><a th:href="@{/events}">Find more</a></div>
+                <div class="dashboard-event-list" th:if="${!#lists.isEmpty(savedEvents)}">
+                    <div class="dashboard-event-row" th:each="event : ${savedEvents}">
+                        <img data-event-image th:attr="data-event-category=${event.category}" th:with="efListingImage=${@display.listingImageUrl(event)}" th:src="${efListingImage}" src="/images/event-visual.png" alt="" loading="lazy" decoding="async">
+                        <div class="dashboard-event-main"><strong th:text="${event.title}">Event</strong><span><i class="bi bi-calendar3"></i><span th:text="${@display.eventDate(event) + ' · ' + @display.eventTime(event)}">Date</span></span><span><i class="bi bi-geo-alt"></i><span th:text="${event.location}">Venue</span></span></div>
+                        <div class="dashboard-event-side"><span class="status-badge" th:text="${@display.status(event)}">UPCOMING</span>
+                            <form th:action="@{'/participant/events/' + ${event.id} + '/unsave'}" method="post"><input type="hidden" name="from" value="dashboard"><button class="text-danger-button" type="submit">Remove</button></form></div>
+                        <a class="ef-event-link" th:href="@{'/events/' + ${event.id}}">View <i class="bi bi-chevron-right"></i></a>
+                    </div>
+                </div>
+                <div class="clean-empty" th:if="${#lists.isEmpty(savedEvents)}"><i class="bi bi-bookmark"></i><h3>No saved events yet</h3><p>Use Save on any event page to keep it here.</p></div>
+            </article>
+            <article class="surface-card large-surface">
+                <div class="surface-heading"><div><span class="section-kicker">TICKETS</span><h2>Tickets &amp; booking status</h2></div><a th:href="@{/participant/registrations}">All registrations</a></div>
+                <div class="data-table-wrap" tabindex="0" role="region" aria-label="Scrollable table" th:if="${!#lists.isEmpty(dashboardEvents)}">
+                    <table class="data-table">
+                        <caption class="ov-sr">Upcoming registered events with booking status and ticket download</caption>
+                        <thead><tr><th scope="col">Event</th><th scope="col">Ticket</th><th scope="col">Status</th><th scope="col" class="actions-column">Ticket</th></tr></thead>
+                        <tbody>
+                            <tr th:each="event : ${dashboardEvents}" th:with="reg=${registrationByEvent[event.id]}">
+                                <td><strong th:text="${event.title}">Event</strong><small th:text="${@display.eventDate(event)}">Date</small></td>
+                                <td th:text="${reg != null ? @display.ticketName(reg) : '-'}">General</td>
+                                <td><span class="status-badge success-status" th:text="${reg != null and @display.paidTicket(reg) ? 'Confirmed · demo payment' : 'Confirmed'}">Confirmed</span></td>
+                                <td class="action-cell"><a class="small-action-button" th:if="${reg != null}" th:href="@{'/participant/registrations/' + ${reg.id} + '/ticket.pdf'}" title="Download ticket (PDF)" aria-label="Download ticket PDF"><i class="bi bi-download"></i></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="clean-empty" th:if="${#lists.isEmpty(dashboardEvents)}"><i class="bi bi-ticket-perforated"></i><h3>No upcoming tickets</h3><p>Booked events and their tickets appear here.</p></div>
+            </article>
+            <article class="surface-card large-surface">
+                <div class="surface-heading"><div><span class="section-kicker">HISTORY</span><h2>Previous events</h2></div><a th:href="@{/participant/registrations}">Review &amp; feedback</a></div>
+                <div class="dashboard-event-list" th:if="${!#lists.isEmpty(previousEvents)}">
+                    <div class="dashboard-event-row" th:each="event : ${previousEvents}">
+                        <img data-event-image th:attr="data-event-category=${event.category}" th:with="efListingImage=${@display.listingImageUrl(event)}" th:src="${efListingImage}" src="/images/event-visual.png" alt="" loading="lazy" decoding="async">
+                        <div class="dashboard-event-main"><strong th:text="${event.title}">Event</strong><span><i class="bi bi-calendar3"></i><span th:text="${@display.eventDate(event)}">Date</span></span></div>
+                        <div class="dashboard-event-side"><span class="status-badge completed-status">COMPLETED</span></div>
+                        <a class="ef-event-link" th:href="@{'/participant/registrations#registration-' + ${event.id}}">Rate event <i class="bi bi-chevron-right"></i></a>
+                    </div>
+                </div>
+                <div class="clean-empty" th:if="${#lists.isEmpty(previousEvents)}"><i class="bi bi-clock-history"></i><h3>No past events yet</h3><p>Events you attended will be listed here so you can leave a review.</p></div>
+            </article>
+            <article class="surface-card large-surface">
+                <div class="surface-heading"><div><span class="section-kicker">ACTIVITY</span><h2>Recent notifications</h2></div><a th:href="@{/notifications}">View all</a></div>
+                <ul class="activity-list" th:if="${!#lists.isEmpty(recentNotifications)}">
+                    <li th:each="n : ${recentNotifications}" th:classappend="${n.read} ? '' : 'is-unread'"><i class="bi bi-bell"></i><span th:text="${n.message}">Message</span><small th:text="${@display.notificationTime(n)}">Time</small></li>
+                </ul>
+                <div class="clean-empty" th:if="${#lists.isEmpty(recentNotifications)}"><i class="bi bi-bell"></i><h3>You're all caught up</h3><p>Booking and event updates appear here.</p></div>
+            </article>
+        </section>
+    </main>
+</div>
+<div th:replace="~{fragments :: toasts}"></div>
+<div th:replace="~{fragments :: confirmModal}"></div>
+
+<script th:if="${analytics != null}" src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+<script th:if="${analytics != null}" th:inline="javascript">
+    window.occavieAnalytics = {
+        trendLabels: /*[[${analytics.trendLabels}]]*/ [],
+        trendValues: /*[[${analytics.trendValues}]]*/ [],
+        categoryLabels: /*[[${analytics.categoryLabels}]]*/ [],
+        categoryValues: /*[[${analytics.categoryValues}]]*/ [],
+        topEventLabels: /*[[${analytics.topEventLabels}]]*/ [],
+        topEventValues: /*[[${analytics.topEventValues}]]*/ []
+    };
+</script>
+<script th:src="@{/js/site.js(v='2026.11.1')}" src="/js/site.js"></script>
+<script>
+(function(){var h=new Date().getHours(),g=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+var a=document.getElementById('dashGreeting');if(a)a.textContent=g;
+var d=document.getElementById('dashToday');if(d)d.textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});})();
+</script>
+</body>
+</html>

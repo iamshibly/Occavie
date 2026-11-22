@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Notifications', 'app')}"></head>
+<body class="ef-workspace">
+<div th:replace="~{fragments :: topbar}"></div>
+<div class="app-shell"><div th:replace="~{fragments :: sidebar('notifications')}"></div>
+<main class="app-main">
+    <section class="page-heading"><div><span class="section-kicker">ACTIVITY</span><h1>Notifications</h1><p>Registration activity and important event updates appear here.</p></div><form th:if="${unreadCount != null and unreadCount > 0}" th:action="@{/notifications/read-all}" method="post" data-loading><button class="secondary-button" type="submit"><i class="bi bi-check2-all"></i>Mark all read</button></form></section>
+    <nav class="notif-tabs" aria-label="Filter notifications">
+        <a th:href="@{/notifications}" th:classappend="${filter != 'unread'} ? ' is-active' : ''" th:attr="aria-current=${filter != 'unread' ? 'page' : null}">All</a>
+        <a th:href="@{/notifications(filter='unread')}" th:classappend="${filter == 'unread'} ? ' is-active' : ''" th:attr="aria-current=${filter == 'unread' ? 'page' : null}">Unread <span th:if="${unreadCount != null and unreadCount > 0}" th:text="${unreadCount}">0</span></a>
+    </nav>
+    <section class="notification-page-card" th:if="${!#lists.isEmpty(notifications)}">
+        <div class="notif-row" th:each="notice : ${notifications}" th:classappend="${(!notice.read ? ' unread' : '') + ' nt-' + #strings.toLowerCase(notice.type != null ? notice.type : 'general')}">
+            <a class="notification-page-item" th:href="@{'/notifications/' + ${notice.id} + '/open'}">
+                <div class="notification-page-icon"><i class="bi" th:classappend="${@display.notificationIcon(notice)}"></i></div>
+                <div class="notification-page-copy">
+                    <div><strong th:text="${@display.notificationLabel(notice)}">Notification</strong>
+                        <small><time th:with="exactTime=${@display.notificationTime(notice)}" th:attr="datetime=${notice.createdAt},title=${exactTime}" th:text="${@display.relativeTime(notice)}">5 min ago</time></small></div>
+                    <p th:text="${notice.message}">Message</p>
+                </div>
+                <span class="notif-dot" th:if="${!notice.read}" aria-label="Unread"></span>
+            </a>
+            <form th:if="${!notice.read}" th:action="@{'/notifications/' + ${notice.id} + '/read'}" method="post"><input type="hidden" name="filter" th:value="${filter}"><button class="small-action-button" type="submit" title="Mark as read" aria-label="Mark as read"><i class="bi bi-check2"></i></button></form>
+        </div>
+    </section>
+    <section class="large-empty" th:if="${#lists.isEmpty(notifications)}"><div class="empty-icon"><i class="bi bi-bell-slash"></i></div><h2 th:text="${filter == 'unread' ? 'You are all caught up' : 'No notifications yet'}">No notifications yet</h2><p>Important registration and event activity will appear here.</p></section>
+</main></div>
+<div th:replace="~{fragments :: toasts}"></div><script th:src="@{/js/site.js(v='2026.11.1')}" src="/js/site.js"></script>
+</body>
+</html>

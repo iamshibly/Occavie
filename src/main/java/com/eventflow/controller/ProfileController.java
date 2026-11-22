@@ -43,6 +43,16 @@ public class ProfileController {
         return "redirect:/profile";
     }
 
+    @PostMapping("/profile/notifications")
+    public String updateNotificationPreferences(Authentication authentication,
+                                                @RequestParam(defaultValue = "false") boolean emailReminders,
+                                                @RequestParam(defaultValue = "false") boolean emailAnnouncements,
+                                                RedirectAttributes redirectAttributes) {
+        userService.updateNotificationPreferences(userService.currentUser(authentication), emailReminders, emailAnnouncements);
+        redirectAttributes.addFlashAttribute("toastSuccess", "Notification preferences saved.");
+        return "redirect:/profile";
+    }
+
     @PostMapping("/profile/photo")
     public String updateProfilePhoto(Authentication authentication,
                                      @RequestParam("photo") MultipartFile photo,

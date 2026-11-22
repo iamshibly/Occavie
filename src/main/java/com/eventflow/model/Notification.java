@@ -29,6 +29,13 @@ public class Notification {
     private String userId;
     private String message;
     private String link;
+    /** NotificationType name; GENERAL for older notifications. */
+    @Builder.Default
+    private String type = "GENERAL";
+    private String eventId;
+    /** Optional idempotency key: a second notification with the same key is never created. */
+    @org.springframework.data.mongodb.core.index.Indexed(unique = true, sparse = true)
+    private String dedupeKey;
     @Builder.Default
     private boolean read = false;
     @Builder.Default

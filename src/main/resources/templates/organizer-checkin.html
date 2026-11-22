@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Check-in', 'app')}"></head>
+<body class="ef-workspace">
+<div th:replace="~{fragments :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('myevents')}"></div>
+    <main class="app-main" id="checkinApp"
+          th:attr="data-event=${event.id},data-csrf=${_csrf.token},data-csrf-header=${_csrf.headerName},data-total=${stats.total},data-checked=${stats.checkedIn}">
+        <section class="page-heading">
+            <div>
+                <span class="section-kicker">ORGANIZER · CHECK-IN</span>
+                <h1 th:text="${event.title}">Event</h1>
+                <p>Scan attendee QR codes or look them up by name. Every ticket is verified on the server.</p>
+            </div>
+            <a class="secondary-button" th:href="@{'/organizer/events/' + ${event.id} + '/participants'}"><i class="bi bi-people"></i>Participants</a>
+        </section>
+
+        <section class="metric-grid ci-stats" aria-live="polite">
+            <article class="metric-card"><div class="metric-icon"><i class="bi bi-check2-circle"></i></div><div><span>Checked in</span><strong id="ciChecked" th:text="${stats.checkedIn}">0</strong></div></article>
+            <article class="metric-card"><div class="metric-icon"><i class="bi bi-hourglass-split"></i></div><div><span>Remaining</span><strong id="ciRemaining" th:text="${stats.remaining}">0</strong></div></article>
+            <article class="metric-card"><div class="metric-icon"><i class="bi bi-people"></i></div><div><span>Registered</span><strong id="ciTotal" th:text="${stats.total}">0</strong></div></article>
+            <article class="metric-card"><div class="metric-icon"><i class="bi bi-pie-chart"></i></div><div><span>Progress</span><strong id="ciPercent" th:text="${stats.total > 0 ? (stats.checkedIn * 100 / stats.total) + '%' : '0%'}">0%</strong></div></article>
+        </section>
+
+        <div class="ci-grid">
+            <section class="surface-card ci-scanner">
+                <div class="surface-heading"><div><span class="section-kicker">SCAN</span><h2>Scan a ticket</h2></div></div>
+                <div class="ci-video-wrap" id="ciVideoWrap" hidden>
+                    <video id="ciVideo" playsinline muted></video>
+                    <div class="ci-frame" aria-hidden="true"></div>
+                </div>
+                <div class="ci-actions">
+                    <button class="primary-button" type="button" id="ciStart"><i class="bi bi-camera"></i>Start camera</button>
+                    <button class="secondary-button" type="button" id="ciStop" hidden><i class="bi bi-stop-circle"></i>Stop camera</button>
+                </div>
+                <p class="field-help" id="ciCameraHelp">Camera scanning needs HTTPS and permission. If it is unavailable, paste the ticket code below or use the lookup.</p>
+                <form id="ciTokenForm" class="ci-token-form">
+                    <label class="ov-sr" for="ciToken">Ticket code</label>
+                    <input id="ciToken" type="text" placeholder="Paste or type ticket code (OVT1…)" autocomplete="off" spellcheck="false">
+                    <button class="secondary-button" type="submit">Verify</button>
+                </form>
+                <div class="ci-result" id="ciResult" role="status" aria-live="assertive" hidden></div>
+            </section>
+
+            <section class="surface-card ci-lookup">
+                <div class="surface-heading"><div><span class="section-kicker">FALLBACK</span><h2>Find an attendee</h2></div></div>
+                <label class="ov-sr" for="ciSearch">Search by name, email or ticket type</label>
+                <div class="table-search"><i class="bi bi-search"></i><input id="ciSearch" type="search" placeholder="Name or email (2+ characters)" autocomplete="off"></div>
+                <ul class="ci-list" id="ciList"><li class="ci-empty">Type at least two characters to search registrations for this event.</li></ul>
+            </section>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments :: toasts}"></div><div th:replace="~{fragments :: confirmModal}"></div>
+<script th:src="@{/js/site.js(v='2026.11.3')}" src="/js/site.js"></script>
+<script th:src="@{/js/checkin.js(v='2026.11.3')}" src="/js/checkin.js"></script>
+</body>
+</html>

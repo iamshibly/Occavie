@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="en" xmlns:th="http://www.thymeleaf.org"><head th:replace="~{fragments :: head('Log in or Sign up', 'public')}"></head><body class="ov-page ov-auth-page" th:classappend="${activeTab == 'register'} ? ' ov-register-open' : ''" th:attr="data-forgot-open=${forgotOpen},data-forgot-step=${forgotStep},data-forgot-email=${forgotEmail},data-forgot-error=${forgotError},data-demo-reset=${demoResetMode}">
+<div th:replace="~{fragments :: siteNav('auth')}"></div>
+<main class="ov-auth-scene">
+  <div class="ov-auth-bg" aria-hidden="true">
+    <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span>
+    <i class="orb o1"></i><i class="orb o2"></i>
+  </div>
+  <div class="ov-auth-main ov-container" th:classappend="${!demoAccessAvailable} ? ' no-demo' : ''">
+    <section class="ov-auth-hero" aria-label="Welcome to Occavie">
+      <a class="brand" th:href="@{/}" href="/" aria-label="Occavie home"><img class="brand-mark" th:src="@{/images/occavie-mark.svg}" src="/images/occavie-mark.svg" alt="" width="44" height="44"><span class="brand-word">Occa<em>vie</em></span></a>
+      <p class="ov-eyebrow">EVENTS · LEARN · CONNECT</p>
+      <h1 id="v1AuthHeroTitle">Welcome<br><em>back</em></h1>
+      <p id="v1AuthHeroDescription">Log in to your Occavie account and continue your event journey.</p>
+      <ul class="ov-auth-points">
+        <li><i class="bi bi-ticket-perforated"></i> Book tickets and download PDF passes</li>
+        <li><i class="bi bi-calendar2-event"></i> Create and manage your own events</li>
+        <li><i class="bi bi-graph-up-arrow"></i> Track bookings, ratings and analytics</li>
+      </ul>
+      <ul class="ov-auth-points ov-auth-points-register" hidden>
+        <li><i class="bi bi-gift"></i> Free to join, no card needed</li>
+        <li><i class="bi bi-lightning-charge"></i> Book your first event in seconds</li>
+        <li><i class="bi bi-megaphone"></i> Or host your own and sell tickets</li>
+      </ul>
+      <div class="ov-auth-floats" aria-hidden="true">
+        <span class="f1"><i class="bi bi-qr-code-scan"></i> Scan in at the door</span>
+        <span class="f2"><i class="bi bi-stars"></i> Picked for you</span>
+        <span class="f3"><i class="bi bi-ticket-perforated"></i> Instant PDF tickets</span>
+      </div>
+    </section>
+    <section class="ov-auth-panel" aria-label="Login and registration">
+      <div class="ov-auth-tabs" role="tablist" aria-label="Account access">
+        <button id="loginTab" type="button" role="tab" aria-selected="true" aria-controls="loginView" class="is-active">Login</button>
+        <button id="registerTab" type="button" role="tab" aria-selected="false" aria-controls="registerView">Register</button>
+      </div>
+      <div class="ov-alert is-error" th:if="${loginError != null}" th:text="${loginError}" role="alert">Login failed</div>
+      <div class="ov-alert is-error" th:if="${registerError != null}" th:text="${registerError}" role="alert">Registration failed</div>
+      <div class="ov-alert is-success" th:if="${registerSuccess != null}" th:text="${registerSuccess}" role="status">Created</div>
+      <div id="v1LogoutSuccess" class="ov-alert is-success" th:if="${logoutSuccess != null and activeTab != 'register'}" th:text="${logoutSuccess}" role="status">Logged out</div>
+      <div class="ov-alert is-success" th:if="${passwordResetSuccess != null}" th:text="${passwordResetSuccess}" role="status">Password updated</div>
+      <section id="loginView" aria-labelledby="loginTab">
+        <form id="loginForm" th:action="@{/login}" method="post">
+          <input type="hidden" name="redirect" th:value="${redirect}">
+          <label for="loginEmail">Email address</label>
+          <div class="ov-auth-input"><i class="bi bi-envelope" aria-hidden="true"></i><input id="loginEmail" name="email" type="email" placeholder="you@example.com" autocomplete="email" required></div>
+          <label for="loginPassword">Password</label>
+          <div class="ov-auth-input"><i class="bi bi-lock" aria-hidden="true"></i><input id="loginPassword" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required><button type="button" class="ov-password-toggle" data-target="loginPassword" aria-label="Show password"><i class="bi bi-eye ov-eye-open" aria-hidden="true"></i><i class="bi bi-eye-slash ov-eye-closed" aria-hidden="true"></i></button></div>
+          <div class="ov-auth-form-row"><label class="ov-remember"><input name="remember-me" type="checkbox"> Remember me</label><a id="v1ForgotLink" th:href="@{/forgot-password}" href="/forgot-password">Forgot password?</a></div>
+          <button class="ov-gold-button ov-auth-submit" type="submit">Sign In</button>
+          <p class="ov-demo-selection" id="v1DemoSelection" role="status" aria-live="polite" hidden></p>
+        </form>
+      </section>
+      <section id="registerView" aria-labelledby="registerTab" hidden>
+        <form id="registerForm" th:action="@{/register}" method="post">
+          <input type="hidden" name="redirect" th:value="${redirect}">
+          <label for="fullName">Full name</label><div class="ov-auth-input"><input id="fullName" name="fullName" type="text" th:value="${formName}" autocomplete="name" minlength="3" maxlength="50" placeholder="Your full name" required></div>
+          <fieldset class="ov-role-pick"><legend>I want to</legend>
+            <label class="ov-role-opt"><input type="radio" name="role" value="PARTICIPANT" th:checked="${formRole != 'ORGANIZER'}" required><span class="ov-role-opt-body"><i class="bi bi-ticket-perforated" aria-hidden="true"></i><strong>Join events</strong><small>Book tickets, save favourites</small></span></label>
+            <label class="ov-role-opt"><input type="radio" name="role" value="ORGANIZER" th:checked="${formRole == 'ORGANIZER'}"><span class="ov-role-opt-body"><i class="bi bi-calendar2-event" aria-hidden="true"></i><strong>Host events</strong><small>Create, sell and check in</small></span></label>
+          </fieldset>
+          <label for="registerEmail">Email address</label><div class="ov-auth-input"><input id="registerEmail" name="email" type="email" th:value="${formEmail}" placeholder="you@example.com" autocomplete="email" required></div>
+          <label for="registerPassword">Password</label><div class="ov-auth-input"><input id="registerPassword" name="password" type="password" placeholder="Create a strong password" autocomplete="new-password" minlength="8" required><button type="button" class="ov-password-toggle" data-target="registerPassword" aria-label="Show password"><i class="bi bi-eye ov-eye-open" aria-hidden="true"></i><i class="bi bi-eye-slash ov-eye-closed" aria-hidden="true"></i></button></div>
+          <div class="ov-strength" id="v1PasswordStrength" aria-live="polite">
+            <div class="ov-strength-line"><span>Password strength</span><strong id="v1StrengthLabel">Enter a password</strong></div>
+            <div class="ov-strength-track" role="progressbar" aria-label="Password strength" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" id="v1StrengthMeter"><span id="v1StrengthBar"></span></div>
+            <div class="ov-password-rules" id="v1PasswordRules">
+              <span data-strength-rule="length">8+ characters</span><span data-strength-rule="lower">Lowercase</span>
+              <span data-strength-rule="upper">Uppercase</span><span data-strength-rule="number">Number</span>
+              <span data-strength-rule="symbol">Symbol</span>
+            </div>
+          </div>
+          <label for="confirmPassword">Confirm password</label><div class="ov-auth-input"><input id="confirmPassword" name="confirmPassword" type="password" placeholder="Repeat password" autocomplete="new-password" minlength="8" required><button type="button" class="ov-password-toggle" data-target="confirmPassword" aria-label="Show password"><i class="bi bi-eye ov-eye-open" aria-hidden="true"></i><i class="bi bi-eye-slash ov-eye-closed" aria-hidden="true"></i></button></div>
+          <p class="ov-match-status" id="v1PasswordMatch" aria-live="polite"></p>
+          <p class="ov-inline-error" id="v1RegisterError" aria-live="polite"></p>
+          <button class="ov-gold-button ov-auth-submit" type="submit">Create Account</button>
+          <p class="ov-auth-switch">Already have an account? <button type="button" class="ov-link-button" id="goLogin">Log in</button></p>
+        </form>
+      </section>
+    </section>
+    <aside class="ov-quick-panel" th:if="${demoAccessAvailable}" aria-label="Quick Access demo accounts">
+      <h2>Quick Access</h2>
+      <div class="ov-quick-role">
+        <button type="button" class="ov-demo-option" data-demo-role="Admin" data-demo-email="admin@eventflow.com" data-demo-password="Admin123!" aria-label="Fill Admin demo login details"><span class="ov-role-icon admin" aria-hidden="true"><i class="bi bi-shield-check"></i></span><span><strong>Admin</strong><small>Manage users and events</small></span><span class="ov-chevron" aria-hidden="true">›</span></button>
+      </div>
+      <div class="ov-quick-role">
+        <button type="button" class="ov-demo-option" data-demo-role="Organizer" data-demo-email="organizer@eventflow.com" data-demo-password="Organizer123!" aria-label="Fill Organizer demo login details"><span class="ov-role-icon organizer" aria-hidden="true"><i class="bi bi-calendar2-event"></i></span><span><strong>Organizer</strong><small>Create and manage events</small></span><span class="ov-chevron" aria-hidden="true">›</span></button>
+      </div>
+      <div class="ov-quick-role">
+        <button type="button" class="ov-demo-option" data-demo-role="Participant" data-demo-email="participant@eventflow.com" data-demo-password="Participant123!" aria-label="Fill Participant demo login details"><span class="ov-role-icon participant" aria-hidden="true"><i class="bi bi-person-heart"></i></span><span><strong>Participant</strong><small>Browse and join events</small></span><span class="ov-chevron" aria-hidden="true">›</span></button>
+      </div>
+    </aside>
+  </div>
+</main>
+<div id="v1ForgotModal" class="ov-forgot-overlay" role="presentation" hidden>
+  <section class="ov-forgot-card" role="dialog" aria-modal="true" aria-labelledby="v1ForgotTitle">
+    <button type="button" id="v1ForgotClose" class="ov-forgot-close" aria-label="Close password recovery">
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </button>
+    <h2 id="v1ForgotTitle">Reset your password</h2>
+    <p class="ov-forgot-description">Enter the email address associated with your account and we will email you a link to choose a new password.</p>
+    <div class="ov-alert is-error" th:if="${!passwordResetAvailable}" role="note">Password reset by email is not set up on this server. Contact an administrator.</div>
+    <div id="v1ForgotError" class="ov-alert is-error" role="alert" hidden></div>
+    <div id="v1ForgotEmailStep">
+      <form id="v1ForgotEmailForm" th:action="@{/forgot-password/request}" method="post">
+        <label for="v1ForgotEmail">Email address</label>
+        <div class="ov-auth-input"><input id="v1ForgotEmail" name="email" type="email" placeholder="you@example.com" autocomplete="email" required th:value="${forgotEmail}"></div>
+        <button type="submit" class="ov-gold-button ov-auth-submit" th:disabled="${!passwordResetAvailable}">Send reset link</button>
+      </form>
+    </div>
+    <div id="v1ForgotResetStep" hidden>
+      <form id="v1ForgotResetForm" th:action="@{/forgot-password/reset}" method="post">
+        <input id="v1ForgotResetEmail" name="email" type="hidden" th:value="${forgotEmail}">
+        <label for="v1ForgotNewPassword">New password</label>
+        <div class="ov-auth-input"><input id="v1ForgotNewPassword" name="newPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="Create a strong password"></div>
+        <p class="ov-password-help">8+ characters, uppercase, lowercase, number and symbol.</p>
+        <label for="v1ForgotConfirmPassword">Confirm new password</label>
+        <div class="ov-auth-input"><input id="v1ForgotConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="Repeat your new password"></div>
+        <p id="v1ForgotValidation" class="ov-inline-error" role="alert" hidden></p>
+        <button type="submit" class="ov-gold-button ov-auth-submit">Update Password</button>
+        <button type="button" id="v1ForgotBack" class="ov-forgot-back">Use a different email</button>
+      </form>
+    </div>
+  </section>
+</div>
+<script th:inline="javascript">window.occavieAuthTab = /*[[${activeTab}]]*/ null;</script>
+<script th:src="@{/js/site.js(v='2026.11.1')}" src="/js/site.js"></script>
+<script th:src="@{/js/auth.js(v='2026.11.1')}" src="/js/auth.js"></script>
+</body></html>

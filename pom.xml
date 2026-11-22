@@ -11,8 +11,8 @@
     <groupId>com.eventflow</groupId>
     <artifactId>eventflow</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>eventflow</name>
-    <description>eventflow</description>
+    <name>occavie</name>
+    <description>Occavie - Make every moment count. Event management platform.</description>
     <url/>
     <licenses>
         <license/>
@@ -89,6 +89,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <!-- QR code encoding for PDF tickets (encoder only, no image-IO extras) -->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
         </dependency>
         <dependency>
             <groupId>org.thymeleaf.extras</groupId>
