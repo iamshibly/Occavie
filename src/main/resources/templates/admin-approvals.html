@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Event approvals', 'app')}"></head>
+<body class="ef-workspace">
+<div th:replace="~{fragments :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('approvals')}"></div>
+    <main class="app-main">
+        <section class="page-heading">
+            <div><span class="section-kicker">ADMIN CONTROL</span><h1>Event approvals</h1>
+                <p th:text="${approvalRequired ? 'Organizers submit events for review before they are published.' : 'Approval is currently off (OCCAVIE_APPROVAL_REQUIRED=false): organizers publish directly. Any events still waiting are listed here.'}">Review submitted events.</p></div>
+        </section>
+        <section class="table-card" th:if="${!#lists.isEmpty(pending)}">
+            <div class="data-table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table class="data-table">
+                <caption class="ov-sr">Events awaiting approval</caption>
+                <thead><tr><th scope="col">Event</th><th scope="col">Organizer</th><th scope="col">Date</th><th scope="col">Submitted</th><th scope="col" class="actions-column">Decision</th></tr></thead>
+                <tbody>
+                    <tr th:each="event : ${pending}">
+                        <td><strong th:text="${event.title}">Event</strong><small th:text="${event.category + ' · ' + event.location}">Category</small>
+                            <a class="ef-event-link" th:href="@{'/events/' + ${event.id}}" target="_blank" rel="noopener">Preview <i class="bi bi-box-arrow-up-right"></i></a></td>
+                        <td th:text="${event.organizerName}">Organizer</td>
+                        <td th:text="${@display.eventDate(event) + ' · ' + @display.eventTime(event)}">Date</td>
+                        <td th:text="${event.submittedAt != null ? #temporals.format(event.submittedAt, 'd MMM, h:mm a') : '—'}">Date</td>
+                        <td class="action-cell">
+                            <form class="inline-form confirm-form" method="post" th:action="@{'/admin/approvals/' + ${event.id} + '/approve'}"
+                                  th:attr="data-confirm-title='Approve ' + ${event.title} + '?',data-confirm='The event is published immediately.',data-confirm-action='Approve'">
+                                <button class="primary-button compact-button" type="submit"><i class="bi bi-check2"></i>Approve</button></form>
+                            <form class="inline-form" method="post" th:action="@{'/admin/approvals/' + ${event.id} + '/reject'}" data-loading>
+                                <label class="ov-sr" th:for="${'reason-' + event.id}">Rejection reason</label>
+                                <input th:id="${'reason-' + event.id}" name="reason" type="text" minlength="5" maxlength="300" required placeholder="Reason for the organizer" class="ci-reason">
+                                <button class="danger-button compact-button" type="submit"><i class="bi bi-x-lg"></i>Reject</button></form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table></div>
+        </section>
+        <section class="large-empty" th:if="${#lists.isEmpty(pending)}"><div class="empty-icon"><i class="bi bi-patch-check"></i></div><h2>Nothing to review</h2><p>Events submitted for approval will appear here.</p></section>
+    </main>
+</div>
+<div th:replace="~{fragments :: toasts}"></div><div th:replace="~{fragments :: confirmModal}"></div>
+<script th:src="@{/js/site.js(v='2026.11.4')}" src="/js/site.js"></script>
+</body>
+</html>

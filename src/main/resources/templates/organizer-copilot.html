@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Event Copilot', 'app')}"></head>
+<body class="ef-workspace">
+<div th:replace="~{fragments :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('myevents')}"></div>
+    <main class="app-main">
+        <section class="page-heading">
+            <div>
+                <a class="back-link" th:href="@{/organizer/events}"><i class="bi bi-arrow-left" aria-hidden="true"></i> My Events</a>
+                <span class="section-kicker">EVENT COPILOT</span>
+                <h1 th:text="${event.title}">Event title</h1>
+                <p>Rule-based advice from the details of this event. It never changes anything by itself.</p>
+            </div>
+            <a class="secondary-button" th:href="@{'/events/' + ${event.id}}" target="_blank" rel="noopener"><i class="bi bi-eye" aria-hidden="true"></i> Preview page</a>
+        </section>
+
+        <section class="copilot-hero" th:classappend="${'is-' + readiness.tone}">
+            <div class="copilot-ring" th:style="${'--score:' + readiness.score}" role="img" th:aria-label="${'Readiness score ' + readiness.score + ' out of 100'}">
+                <strong th:text="${readiness.score}">0</strong><small>of 100</small>
+            </div>
+            <div class="copilot-summary">
+                <span class="copilot-level" th:text="${readiness.level}">Almost there</span>
+                <h2 th:text="${readiness.score >= 90 ? 'This event is in great shape.' : (readiness.score >= 75 ? 'Ready to publish. A few touches would make it stronger.' : (readiness.score >= 50 ? 'Good start. Finish these to attract more people.' : 'Needs a few key details before it will convert.'))}">Summary</h2>
+                <p th:if="${!#lists.isEmpty(readiness.topTips)}">Do these next, biggest impact first:</p>
+                <ol class="copilot-next" th:if="${!#lists.isEmpty(readiness.topTips)}">
+                    <li th:each="tip : ${readiness.topTips}">
+                        <span><strong th:text="${tip.label}">Label</strong> <em th:text="${'+' + tip.missing() + ' points'}">+10 points</em><br><small th:text="${tip.tip}">Tip</small></span>
+                        <a class="primary-button" th:href="${fixLinks[tip.id]}"><span>Fix</span> <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                    </li>
+                </ol>
+                <p class="copilot-allgood" th:if="${#lists.isEmpty(readiness.topTips)}"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Every check passed.</p>
+            </div>
+        </section>
+
+        <section class="surface-card copilot-insights" th:if="${!#lists.isEmpty(insights)}" aria-labelledby="copGrowth">
+            <div class="surface-heading"><div><span class="section-kicker">GROWTH TIPS</span><h2 id="copGrowth">What to do about bookings</h2></div></div>
+            <ul class="copilot-tips">
+                <li th:each="insight : ${insights}"><i class="bi" th:classappend="${insight.icon}" aria-hidden="true"></i><span th:text="${insight.text}">Tip</span>
+                    <a class="secondary-button" th:href="${insight.link}">Open</a></li>
+            </ul>
+        </section>
+
+        <section class="surface-card copilot-checks" aria-labelledby="copChecks">
+            <div class="surface-heading"><div><span class="section-kicker">CHECKLIST</span><h2 id="copChecks">All checks</h2></div></div>
+            <ul class="copilot-list">
+                <li th:each="c : ${readiness.checks}" th:classappend="${'is-' + #strings.toLowerCase(c.status)}">
+                    <i class="bi copilot-icon" th:classappend="${c.status.name() == 'DONE' ? 'bi-check-circle-fill' : (c.status.name() == 'IMPROVE' ? 'bi-dash-circle-fill' : 'bi-x-circle-fill')}" aria-hidden="true"></i>
+                    <div><strong th:text="${c.label}">Label</strong>
+                        <small th:if="${!c.done()}" th:text="${c.tip}">Tip</small>
+                        <small class="copilot-ok" th:if="${c.done()}">Looks good.</small></div>
+                    <span class="copilot-points" th:text="${c.points + ' / ' + c.max}">0 / 10</span>
+                    <a class="secondary-button" th:if="${!c.done()}" th:href="${fixLinks[c.id]}">Fix</a>
+                </li>
+            </ul>
+        </section>
+    </main>
+</div>
+<div th:replace="~{fragments :: toasts}"></div>
+<script th:src="@{/js/site.js(v='2026.11.2')}" src="/js/site.js"></script>
+</body>
+</html>

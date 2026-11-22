@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Checkout', 'public')}"></head>
+<body class="ov-page ef-payment-page ov-co-page">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div th:replace="~{fragments :: siteNav('events')}"></div>
+<section class="ov-auth-scene ov-co-hero" aria-labelledby="coTitle">
+  <div class="ov-auth-bg" aria-hidden="true">
+    <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span>
+    <i class="orb o1"></i><i class="orb o2"></i>
+  </div>
+  <div class="ov-container ov-co-hero-inner">
+    <a class="ov-ed-back" th:href="@{'/events/' + ${event.id} + '#tickets'}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to event</a>
+    <p class="ov-eyebrow">SECURE CHECKOUT</p>
+    <h1 id="coTitle">Complete your <em>registration</em></h1>
+  <ol class="ov-co-steps" aria-label="Checkout progress">
+    <li class="is-done"><b><i class="bi bi-ticket-perforated" aria-hidden="true"></i></b><span>Choose ticket</span></li>
+    <li class="is-now" aria-current="step"><b><i class="bi bi-credit-card-2-front" aria-hidden="true"></i></b><span>Payment</span></li>
+    <li class=""><b><i class="bi bi-check2-circle" aria-hidden="true"></i></b><span>Confirmed</span></li>
+  </ol>
+  </div>
+</section>
+<main class="ov-container ov-co-main" id="main-content">
+  <form class="ov-co-grid" th:action="@{'/participant/events/' + ${event.id} + '/pay'}" method="post" id="efPaymentForm" data-loading>
+    <input type="hidden" name="ticketTypeId" th:value="${quote.ticketTypeId}">
+    <section class="ov-co-card ov-co-left" aria-label="Payment details">
+      <div class="ov-demo-banner" role="note"><i class="bi bi-info-circle-fill" aria-hidden="true"></i><div><strong>Demo checkout</strong><span>This is a simulation. No real payment is taken and no money changes hands. The booking is saved with a demo reference.</span></div></div>
+      <div class="ef-payment-section-head"><h2><span class="ov-co-num">1</span> Choose a demo payment method</h2></div>
+      <div class="ef-payment-methods" role="radiogroup" aria-label="Preferred payment method">
+        <label class="ef-method-option"><input type="radio" name="paymentMethod" value="BKASH" required><span class="ef-method-tile"><i class="bi bi-check-circle-fill ef-method-check"></i><img th:src="@{/images/payment-bkash.png}" src="/images/payment-bkash.png" alt="bKash"></span></label>
+        <label class="ef-method-option"><input type="radio" name="paymentMethod" value="NAGAD" required><span class="ef-method-tile"><i class="bi bi-check-circle-fill ef-method-check"></i><img th:src="@{/images/payment-nagad.png}" src="/images/payment-nagad.png" alt="Nagad"></span></label>
+        <label class="ef-method-option"><input type="radio" name="paymentMethod" value="VISA" required><span class="ef-method-tile"><i class="bi bi-check-circle-fill ef-method-check"></i><img th:src="@{/images/payment-visa.png}" src="/images/payment-visa.png" alt="Visa"></span></label>
+      </div>
+      <p class="ef-method-note" id="efMethodNote" aria-live="polite">Choose a payment method.</p>
+      <div class="ef-checkout-divider"></div>
+      <div class="ef-payment-section-head"><h2><span class="ov-co-num">2</span> Have a promo code?</h2></div>
+      <div class="ef-promo-field" id="efCheckoutCoupon" th:attr="data-event-id=${event.id},data-ticket-id=${quote.ticketTypeId}">
+        <label for="efCouponCode">Promo code (optional)</label>
+        <div class="ef-promo-row"><input id="efCouponCode" name="couponCode" maxlength="20" autocomplete="off" placeholder="Enter coupon code" th:value="${couponInput}"><button type="button" id="efCouponApply">Apply</button></div>
+        <div id="efCouponResult" class="ef-promo-message" role="status" aria-live="polite"></div>
+      </div>
+    </section>
+    <aside class="ov-co-card ov-co-summary" aria-label="Order summary">
+      <div class="ov-co-event">
+        <img th:with="efCover=${@display.listingImageUrl(event)}" th:src="${efCover}" src="/images/event-visual.png" alt="" onerror="this.onerror=null;this.src='/images/event-visual.png'">
+        <div class="ov-co-event-info"><span class="ov-co-chip" th:text="${quote.ticketTypeName}">Standard</span><h2 th:text="${event.title}">Event name</h2></div>
+      </div>
+      <ul class="ov-co-facts">
+        <li><i class="bi bi-calendar3" aria-hidden="true"></i> <span th:text="${@display.eventDate(event) + ' · ' + @display.eventTime(event)}">Date and time</span></li>
+        <li><i class="bi bi-geo-alt" aria-hidden="true"></i> <span th:text="${event.location}">Location</span></li>
+      </ul>
+      <div class="ef-price-list">
+        <div><span>Ticket price</span><strong id="efOriginalPrice" th:text="${'৳' + quote.originalPrice}">৳800</strong></div>
+        <div><span>Coupon discount</span><strong class="ef-discount" id="efDiscount" th:text="${'− ৳' + quote.discountAmount}">− ৳0</strong></div>
+        <div class="ef-price-total"><span>Total (demo, not charged)</span><strong id="efPayable" th:text="${'৳' + quote.total}">৳800</strong></div>
+      </div>
+      <button type="submit" class="ef-pay-submit"><i class="bi bi-lock" aria-hidden="true"></i> Confirm demo booking <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+      <p class="ov-co-secure"><i class="bi bi-shield-check" aria-hidden="true"></i> Your booking is protected and tickets are signed.</p>
+    </aside>
+  </form>
+</main>
+<div th:replace="~{fragments :: siteFooter}"></div>
+<div th:replace="~{fragments :: toasts}"></div>
+<script th:src="@{/js/site.js(v='2026.11.1')}" src="/js/site.js"></script>
+<script th:src="@{/js/payment-checkout.js(v=20261011simple)}" src="/js/payment-checkout.js" defer></script>
+</body>
+</html>

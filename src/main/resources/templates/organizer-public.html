@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head(${organizer.fullName}, 'public')}"></head>
+<body class="ov-page">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div th:replace="~{fragments :: siteNav('events')}"></div>
+<main id="main-content">
+    <section class="ov-auth-scene ov-org-scene">
+  <div class="ov-auth-bg" aria-hidden="true">
+    <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span>
+    <i class="orb o1"></i><i class="orb o2"></i>
+  </div>
+      <div class="ov-container ov-org-hero">
+        <img class="ov-org-avatar" th:src="${organizer.profileImageUrl != null ? organizer.profileImageUrl : '/images/default-avatar.png'}" src="/images/default-avatar.png"
+             th:alt="${organizer.fullName + ' profile picture'}" width="112" height="112">
+        <div class="ov-org-copy">
+            <p class="ov-eyebrow">ORGANIZER</p>
+            <h1 th:text="${organizer.fullName}">Organizer</h1>
+            <p class="ov-org-bio" th:if="${organizer.bio != null}" th:text="${organizer.bio}">Bio</p>
+            <p class="ov-org-bio is-muted" th:unless="${organizer.bio != null}">This organizer has not added a description yet.</p>
+            <div class="ov-org-links">
+                <a class="ov-outline-button" th:if="${organizer.website != null}" th:href="${organizer.website}" target="_blank" rel="nofollow noopener noreferrer"><i class="bi bi-globe2"></i><span>Website</span></a>
+                <a class="ov-outline-button" th:if="${organizer.publicContactEmail != null}" th:href="'mailto:' + ${organizer.publicContactEmail}"><i class="bi bi-envelope"></i><span th:text="${organizer.publicContactEmail}">Email</span></a>
+                <button class="ov-outline-button" type="button" data-copy-link th:attr="data-url=${canonicalUrl}"><i class="bi bi-link-45deg"></i><span>Copy link</span></button>
+            </div>
+        </div>
+        <dl class="ov-org-stats">
+            <div><dt>Upcoming</dt><dd th:text="${#lists.size(upcoming)}">0</dd></div>
+            <div><dt>Past events</dt><dd th:text="${#lists.size(past)}">0</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <div class="ov-container ov-org-page">
+    <section class="ov-section" aria-labelledby="orgUpcoming">
+        <div class="ov-section-head"><div><p class="ov-eyebrow">PUBLISHED</p><h2 id="orgUpcoming">Upcoming events</h2></div></div>
+        <div class="ov-event-grid" th:if="${!#lists.isEmpty(upcoming)}">
+            <article class="ov-event-card" th:each="event : ${upcoming}" th:with="coverImage=${@display.listingImageUrl(event)}">
+                <a class="ov-card-photo" th:href="@{'/events/' + ${event.id}}" tabindex="-1" th:aria-label="${'View ' + event.title}">
+                    <img data-event-image th:attr="data-event-category=${event.category}" th:src="${coverImage}" src="/images/event-visual.png" th:alt="${event.title + ' cover image'}" width="600" height="375" loading="lazy" decoding="async">
+                    <span class="ov-card-tag" th:text="${event.category}">Category</span>
+                </a>
+                <div class="ov-event-card-body">
+                    <span class="ov-event-date"><i class="bi bi-calendar3"></i><span th:text="${@display.eventDate(event) + ' · ' + @display.eventTime(event)}">Date</span></span>
+                    <h3><a th:href="@{'/events/' + ${event.id}}" th:text="${event.title}">Event</a></h3>
+                    <p class="ov-event-location"><i class="bi bi-geo-alt"></i> <span th:text="${event.location}">Venue</span></p>
+                    <div class="ov-card-footer"><a class="ov-card-action" th:href="@{'/events/' + ${event.id}}">View details <i class="bi bi-arrow-right"></i></a></div>
+                </div>
+            </article>
+        </div>
+        <div class="ov-empty" th:if="${#lists.isEmpty(upcoming)}"><div class="empty-icon"><i class="bi bi-calendar2-x"></i></div><h3>No upcoming events</h3><p>Check back soon.</p></div>
+    </section>
+
+    <section class="ov-section" aria-labelledby="orgPast" th:if="${!#lists.isEmpty(past)}">
+        <div class="ov-section-head"><div><p class="ov-eyebrow">HISTORY</p><h2 id="orgPast">Past events</h2></div></div>
+        <ul class="ov-past-list">
+            <li th:each="event : ${past}"><a th:href="@{'/events/' + ${event.id}}"><strong th:text="${event.title}">Event</strong><span th:text="${@display.eventDate(event) + ' · ' + event.location}">Date</span></a></li>
+        </ul>
+    </section>
+    </div>
+</main>
+<div th:replace="~{fragments :: siteFooter}"></div>
+<div th:replace="~{fragments :: toasts}"></div>
+<script th:src="@{/js/site.js(v='2026.11.4')}" src="/js/site.js"></script>
+</body>
+</html>

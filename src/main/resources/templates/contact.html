@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Contact Support', 'all')}"></head>
+<body th:class="${signedIn} ? 'ef-workspace contact-dashboard-body' : 'ov-page ef-contact contact-public-body'">
+<th:block th:if="${!signedIn}"><div th:replace="~{fragments :: siteNav('contact')}"></div></th:block>
+
+<th:block th:if="${signedIn}"><div th:replace="~{fragments :: topbar}"></div></th:block>
+<th:block th:if="${!signedIn}">
+<section class="ov-auth-scene ov-ct-hero" aria-labelledby="ctTitle">
+  <div class="ov-auth-bg" aria-hidden="true">
+    <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span>
+    <i class="orb o1"></i><i class="orb o2"></i>
+  </div>
+  <div class="ov-container ov-ct-hero-inner">
+    <p class="ov-eyebrow">OCCAVIE SUPPORT</p>
+    <h1 id="ctTitle">How can we <em>help?</em></h1>
+    <p class="ov-ab-lead">Questions about an event, a booking or hosting your own? Send us a message and a real person will get back to you.</p>
+    <ul class="ov-ct-chips" aria-label="Support highlights">
+      <li><i class="bi bi-chat-heart" aria-hidden="true"></i> Friendly, human replies</li>
+      <li><i class="bi bi-shield-check" aria-hidden="true"></i> Your message stays private</li>
+      <li><i class="bi bi-lightning-charge" aria-hidden="true"></i> Quick answers below</li>
+    </ul>
+  </div>
+</section>
+</th:block>
+<div th:class="${signedIn} ? 'app-shell' : 'contact-public-shell'">
+    <th:block th:if="${signedIn}"><div th:replace="~{fragments :: sidebar('contact')}"></div></th:block>
+    <main th:class="${signedIn} ? 'app-main contact-dashboard-main' : 'contact-public-main'">
+    <section class="contact-hero-copy" th:if="${signedIn}">
+        <span class="section-kicker">OCCAVIE SUPPORT</span>
+        <h1>How can we help?</h1>
+        <p>Send a request to Occavie support for event, registration, organizer or technical assistance.</p>
+    </section>
+
+    <div class="contact-layout">
+        <section class="contact-info-card">
+            <div class="contact-info-top">
+                <span class="contact-info-icon"><i class="bi bi-headset"></i></span>
+                <div><span class="section-kicker">CONTACT INFORMATION</span><h2>Reach Occavie</h2><p>Use the form or contact the support representative directly.</p></div>
+            </div>
+
+            <div class="contact-person-card" th:with="devName=${@site.developerName},devInitials=${@site.developerInitials}">
+                <div class="contact-person-avatar" th:text="${devInitials}">OC</div>
+                <div><small>Support Representative</small><strong th:text="${devName}">Occavie team</strong></div>
+            </div>
+
+            <div class="contact-channel-list" th:with="cMail=${@site.contactEmail},cWa=${@site.contactWhatsapp},cAddr=${@site.contactAddress},cFb=${@site.facebookUrl},cLi=${@site.linkedinUrl}">
+                <a class="contact-channel" th:if="${!#strings.isEmpty(cMail)}" th:href="${'mailto:' + cMail}">
+                    <span class="gmail-contact-mark"><img src="/images/gmail-logo.svg" th:src="@{/images/gmail-logo.svg}" alt="" width="26" height="26"></span>
+                    <div><small>Email</small><strong th:text="${cMail}">email</strong></div>
+                    <i class="bi bi-arrow-up-right"></i>
+                </a>
+                <a class="contact-channel whatsapp" th:if="${!#strings.isEmpty(cWa)}" th:href="${'https://wa.me/' + cWa}" target="_blank" rel="noopener">
+                    <span><i class="bi bi-whatsapp"></i></span>
+                    <div><small>WhatsApp</small><strong th:text="${'+' + cWa}">number</strong></div>
+                    <i class="bi bi-arrow-up-right"></i>
+                </a>
+                <a class="contact-channel" th:if="${!#strings.isEmpty(cFb)}" th:href="${cFb}" target="_blank" rel="noopener noreferrer">
+                    <span><i class="bi bi-facebook"></i></span>
+                    <div><small>Facebook</small><strong>Message on Facebook</strong></div>
+                    <i class="bi bi-arrow-up-right"></i>
+                </a>
+                <a class="contact-channel" th:if="${!#strings.isEmpty(cLi)}" th:href="${cLi}" target="_blank" rel="noopener noreferrer">
+                    <span><i class="bi bi-linkedin"></i></span>
+                    <div><small>LinkedIn</small><strong>iamshibly</strong></div>
+                    <i class="bi bi-arrow-up-right"></i>
+                </a>
+                <div class="contact-channel static" th:if="${!#strings.isEmpty(cAddr)}">
+                    <span><i class="bi bi-geo-alt-fill"></i></span>
+                    <div><small>Address</small><strong th:text="${cAddr}">Dhaka, Bangladesh</strong></div>
+                </div>
+            </div>
+
+            <div class="contact-security-note"><i class="bi bi-shield-check"></i><span>Your request is stored securely and is visible only to Occavie administrators.</span></div>
+        </section>
+
+        <section class="contact-form-card">
+            <div class="contact-form-heading"><span class="section-kicker">SEND A REQUEST</span><h2>Tell us what happened</h2><p>Provide enough detail so the support team can understand the issue clearly.</p></div>
+
+            <div class="contact-form-alert success" th:if="${contactSuccess}"><i class="bi bi-check-circle-fill"></i><span th:text="${contactSuccess}">Message sent.</span></div>
+            <div class="contact-form-alert error" th:if="${contactError}"><i class="bi bi-exclamation-circle-fill"></i><span th:text="${contactError}">Error</span></div>
+
+            <form class="contact-form" th:action="@{/contact}" method="post" data-loading>
+                <div class="contact-form-grid">
+                    <div class="field-group"><label for="contactName">Full Name</label><input id="contactName" name="fullName" type="text" minlength="3" maxlength="80" required placeholder="Your full name" th:value="${contactForm != null ? contactForm.fullName : (currentUser != null ? currentUser.fullName : '')}"></div>
+                    <div class="field-group"><label for="contactEmail">Email</label><input id="contactEmail" name="email" type="email" maxlength="120" required placeholder="you@example.com" th:value="${contactForm != null ? contactForm.email : (currentUser != null ? currentUser.email : '')}"></div>
+                    <div class="field-group"><label for="contactPhone">Phone / WhatsApp <span class="optional-label">Optional</span></label><input id="contactPhone" name="phone" type="text" maxlength="24" placeholder="+880..." th:value="${contactForm != null ? contactForm.phone : ''}"></div>
+                    <div class="field-group"><label for="contactType">Request Type</label><select id="contactType" name="requestType" required><option value="">Choose request type</option><option value="GENERAL_INQUIRY" th:selected="${contactForm != null and contactForm.requestType == 'GENERAL_INQUIRY'}">General Inquiry</option><option value="EVENT_SUPPORT" th:selected="${contactForm != null and contactForm.requestType == 'EVENT_SUPPORT'}">Event Support</option><option value="REGISTRATION_ISSUE" th:selected="${contactForm != null and contactForm.requestType == 'REGISTRATION_ISSUE'}">Registration Issue</option><option value="COUPON_PRICING_ISSUE" th:selected="${contactForm != null and contactForm.requestType == 'COUPON_PRICING_ISSUE'}">Coupon / Pricing Issue</option><option value="ORGANIZER_SUPPORT" th:selected="${contactForm != null and contactForm.requestType == 'ORGANIZER_SUPPORT'}">Organizer Support</option><option value="TECHNICAL_PROBLEM" th:selected="${contactForm != null and contactForm.requestType == 'TECHNICAL_PROBLEM'}">Technical Problem</option><option value="OTHER" th:selected="${contactForm != null and contactForm.requestType == 'OTHER'}">Other</option></select></div>
+                    <div class="field-group full-width"><label for="contactSubject">Subject</label><input id="contactSubject" name="subject" type="text" minlength="3" maxlength="120" required placeholder="Briefly describe the issue" th:value="${contactForm != null ? contactForm.subject : ''}"></div>
+                    <div class="field-group full-width"><div class="field-label-row"><label for="contactMessage">Message</label><small id="contactMessageCount">0 / 1500</small></div><textarea id="contactMessage" name="message" rows="7" minlength="10" maxlength="1500" required placeholder="Describe your request in detail..." th:text="${contactForm != null ? contactForm.message : ''}"></textarea></div>
+                </div>
+                <button class="primary-button contact-submit-button" type="submit"><i class="bi bi-send"></i>Send Request</button>
+            </form>
+        </section>
+    </div>
+    <section class="ov-ct-faq" th:if="${!signedIn}" aria-labelledby="ctFaq">
+        <div class="ov-ab-head"><p class="ov-eyebrow">QUICK ANSWERS</p><h2 id="ctFaq">Maybe we have already answered it</h2></div>
+        <div class="ov-ct-faq-list">
+            <details><summary>How do I get my ticket?</summary><p>After booking, open <strong>My Registrations</strong> in your dashboard and download the PDF ticket. It includes a QR code to scan at the door.</p></details>
+            <details><summary>I paid but my payment was not accepted</summary><p>Payments on Occavie are a demonstration. Use the reference shown at checkout exactly as displayed. If it still fails, send us the event name and what you saw.</p></details>
+            <details><summary>How do I host my own event?</summary><p>Create a free account, choose <strong>Host events</strong>, and the event wizard walks you through details, tickets and publishing. The Copilot shows what to improve.</p></details>
+            <details><summary>Can I get a refund or cancel a booking?</summary><p>Free bookings can be cancelled from your registrations. For anything else, send a request with the event name and we will point you to the organizer.</p></details>
+            <details><summary>I forgot my password</summary><p>Use <a href="/forgot-password">Forgot password</a> on the login page. We email you a secure link that works once for 30 minutes.</p></details>
+        </div>
+    </section>
+</main>
+</div>
+<th:block th:if="${signedIn}"><div th:replace="~{fragments :: toasts}"></div></th:block>
+<script th:src="@{/js/site.js(v='2026.11.1')}" src="/js/site.js"></script>
+</body>
+</html>

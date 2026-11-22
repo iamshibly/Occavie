@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('My Events', 'app')}"></head>
+<body class="ef-workspace">
+<div th:replace="~{fragments :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('myevents')}"></div>
+    <main class="app-main">
+        <section class="page-heading">
+            <div><span class="section-kicker">ORGANIZER WORKSPACE</span><h1>My Events</h1><p>Create, update and monitor every event you organize.</p></div>
+            <a class="primary-button" th:href="@{/organizer/events/new}"><i class="bi bi-plus-lg"></i>Create Event</a>
+        </section>
+
+        <section class="table-card organizer-event-filters" th:if="${!#lists.isEmpty(events)}">
+            <div class="table-toolbar admin-event-toolbar">
+                <div class="table-search"><i class="bi bi-search"></i><input id="organizerEventSearch" type="search" placeholder="Search my events or location..." aria-label="Search my events"></div>
+                <select class="toolbar-select" id="organizerEventCategoryFilter" aria-label="Filter by category"><option value="ALL">All categories</option><option th:each="category : ${categories}" th:value="${category}" th:text="${category}">Category</option></select>
+                <select class="toolbar-select compact-toolbar-select" id="organizerEventPricingFilter" aria-label="Filter by pricing"><option value="ALL">Free &amp; Paid</option><option value="FREE">Free</option><option value="PAID">Paid</option></select>
+                <select class="toolbar-select compact-toolbar-select" id="organizerEventStatusFilter" aria-label="Filter by status"><option value="ALL">All statuses</option><option value="UPCOMING">Upcoming</option><option value="COMPLETED">Completed</option></select>
+                <div class="table-count" id="organizerEventCount" th:text="${#lists.size(events) + ' events'}">0 events</div>
+            </div>
+        </section>
+        <section class="management-grid" id="organizerEventGrid" th:if="${!#lists.isEmpty(events)}">
+            <article class="management-event-card" th:each="event : ${events}" th:with="summary=${feedbackSummaries[event.id]},efPaid=${@display.paid(event)},efStatus=${@display.status(event)}" th:attr="data-search=${event.title + ' ' + event.location},data-category=${event.category},data-pricing=${efPaid ? 'PAID' : 'FREE'},data-status=${efStatus}">
+                <div class="management-event-image">
+                    <img data-event-image th:attr="data-event-category=${event.category}" th:with="efListingImage=${@display.listingImageUrl(event)}" th:src="${efListingImage}" alt="Event image" loading="lazy" decoding="async">
+                    <span class="status-badge" th:classappend="${@display.status(event) == 'PENDING_APPROVAL'} ? ' is-pending' : (${@display.status(event) == 'REJECTED' or @display.status(event) == 'CANCELLED'} ? ' is-cancelled' : (${@display.status(event) == 'DRAFT'} ? ' is-draft' : ''))" th:text="${@display.statusLabel(event)}">Published</span><span class="event-price-badge management-price" th:classappend="${@display.paid(event)} ? ' paid' : ' free'" th:text="${@display.paid(event) ? @display.formattedBasePrice(event) : 'FREE'}">FREE</span>
+                </div>
+                <div class="management-event-body">
+                    <span class="category-label" th:text="${event.category}">Technology</span>
+                    <h2 th:text="${event.title}">Event title</h2>
+                    <div class="approval-note" th:if="${event.approvalNote != null and @display.status(event) == 'REJECTED'}" role="note"><i class="bi bi-exclamation-circle"></i><span th:text="${'Not approved: ' + event.approvalNote}">Reason</span></div>
+                    <div class="approval-note" th:if="${@display.status(event) == 'PENDING_APPROVAL'}" role="note" style="background:var(--info-soft)"><i class="bi bi-hourglass-split" style="color:var(--info)"></i><span>Awaiting administrator approval. The event is locked until it is reviewed or withdrawn.</span></div>
+                    <div class="event-detail-line"><i class="bi bi-calendar3"></i><span th:text="${@display.eventDate(event) + ' · ' + @display.eventTime(event)}">Date</span></div>
+                    <div class="event-detail-line"><i class="bi bi-geo-alt"></i><span th:text="${event.location}">Location</span></div>
+                    <div class="compact-rating-summary" th:if="${summary != null and summary.totalReviews > 0}">
+                        <span><i class="bi bi-star-fill"></i><strong th:text="${#numbers.formatDecimal(summary.averageRating, 1, 1)}">4.8</strong></span>
+                        <small th:text="${summary.totalReviews + (summary.totalReviews == 1 ? ' review' : ' reviews')}">0 reviews</small>
+                    </div>
+                    <div class="compact-rating-summary empty-rating" th:if="${summary == null or summary.totalReviews == 0}"><span><i class="bi bi-star"></i><strong>No ratings yet</strong></span></div>
+                    <div class="event-program-chips">
+                        <span><i class="bi bi-list-ol"></i><strong th:text="${scheduleCounts[event.id]}">0</strong> sessions</span>
+                        <span><i class="bi bi-person-video3"></i><strong th:text="${speakerCounts[event.id]}">0</strong> speakers</span>
+                        <span><i class="bi bi-award"></i><strong th:text="${sponsorCounts[event.id]}">0</strong> sponsors</span>
+                        <span><i class="bi bi-ticket-detailed"></i><strong th:text="${ticketCounts[event.id]}">0</strong> ticket types</span>
+                    </div>
+                    <a class="copilot-strip" th:if="${readiness != null and readiness[event.id] != null}" th:href="@{'/organizer/events/' + ${event.id} + '/copilot'}" th:classappend="${'is-' + readiness[event.id].tone}"
+                       th:aria-label="${'Event Copilot for ' + event.title + ': ' + readiness[event.id].score + ' percent ready'}">
+                        <span class="copilot-mini" th:style="${'--score:' + readiness[event.id].score}"><b th:text="${readiness[event.id].score}">0</b></span>
+                        <span class="copilot-strip-text"><strong th:text="${'Copilot: ' + readiness[event.id].level}">Copilot</strong>
+                            <small th:text="${#lists.isEmpty(readiness[event.id].topTips) ? 'Every check passed.' : readiness[event.id].topTips[0].tip}">Tip</small></span>
+                        <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                    </a>
+                    <div class="capacity-block">
+                        <div><span>Registrations</span><strong th:text="${registrationCounts[event.id] + ' / ' + event.capacity}">0 / 100</strong></div>
+                        <div class="progress-track"><span th:style="|width:${event.capacity > 0 ? (registrationCounts[event.id] * 100 / event.capacity) : 0}%|"></span></div>
+                    </div>
+                    <div class="card-actions" th:with="st=${@display.status(event)}">
+                        <th:block th:if="${st == 'DRAFT' or st == 'REJECTED'}">
+                            <a class="primary-button" th:href="@{/organizer/events/{id}/wizard(id=${event.id},step=1)}"><i class="bi bi-pencil-square"></i><span th:text="${st == 'REJECTED' ? 'Edit &amp; resubmit' : 'Continue editing'}">Continue editing</span></a>
+                            <a class="secondary-button" th:href="@{'/events/' + ${event.id}}"><i class="bi bi-eye"></i>Preview</a>
+                        </th:block>
+                        <th:block th:if="${st == 'PENDING_APPROVAL'}">
+                            <a class="secondary-button" th:href="@{'/events/' + ${event.id}}"><i class="bi bi-eye"></i>Preview</a>
+                            <form class="inline-form confirm-form" method="post" th:action="@{'/organizer/events/' + ${event.id} + '/withdraw'}"
+                                  data-confirm-title="Withdraw from review?" data-confirm="The event becomes a draft again and you can edit it." data-confirm-action="Withdraw">
+                                <button class="secondary-button" type="submit"><i class="bi bi-arrow-counterclockwise"></i>Withdraw</button></form>
+                        </th:block>
+                        <th:block th:if="${st != 'DRAFT' and st != 'REJECTED' and st != 'PENDING_APPROVAL'}">
+                            <a class="secondary-button program-manage-button" th:if="${st != 'CANCELLED'}" th:href="@{'/organizer/events/' + ${event.id} + '/program'}"><i class="bi bi-sliders"></i><span th:text="${st == 'COMPLETED' ? 'View Setup' : 'Setup'}">Setup</span></a>
+                            <a class="secondary-button" th:href="@{'/organizer/events/' + ${event.id} + '/participants'}"><i class="bi bi-people"></i>Participants</a>
+                            <a class="secondary-button" th:if="${st == 'UPCOMING'}" th:href="@{'/organizer/events/' + ${event.id} + '/check-in'}"><i class="bi bi-qr-code-scan"></i>Check-in</a>
+                            <a class="secondary-button" th:if="${st == 'UPCOMING'}" th:href="@{'/organizer/events/' + ${event.id} + '/waitlist'}"><i class="bi bi-hourglass-split"></i>Waitlist</a>
+                            <a class="secondary-button" th:if="${st == 'UPCOMING'}" th:href="@{'/organizer/events/' + ${event.id} + '/announcements'}"><i class="bi bi-megaphone"></i>Announce</a>
+                            <a class="secondary-button" th:href="@{/organizer/feedback}"><i class="bi bi-star"></i>Feedback</a>
+                            <a class="secondary-button" th:if="${st == 'UPCOMING'}" th:href="@{'/organizer/events/' + ${event.id} + '/edit'}"><i class="bi bi-pencil"></i>Edit &amp; reschedule</a>
+                        </th:block>
+                        <form class="inline-form confirm-form" method="post" th:action="@{'/organizer/events/' + ${event.id} + '/duplicate'}"
+                              data-confirm-title="Duplicate this event?" data-confirm="A private draft copy is created. You choose a new date and time before publishing." data-confirm-action="Duplicate">
+                            <button class="secondary-button" type="submit"><i class="bi bi-copy"></i>Duplicate</button>
+                        </form>
+                        <form class="inline-form confirm-form" th:if="${st == 'UPCOMING'}" method="post" th:action="@{'/organizer/events/' + ${event.id} + '/cancel'}"
+                              th:attr="data-confirm-title='Cancel ' + ${event.title} + '?',data-confirm='Registered participants and the waitlist are notified and the event is closed. This cannot be undone.',data-confirm-action='Cancel Event'">
+                            <button class="danger-button" type="submit"><i class="bi bi-x-octagon"></i>Cancel event</button>
+                        </form>
+                        <form class="inline-form confirm-form" th:if="${st == 'DRAFT' or st == 'UPCOMING' or st == 'REJECTED' or st == 'PENDING_APPROVAL'}" th:action="@{'/organizer/events/' + ${event.id} + '/delete'}" method="post" th:attr="data-confirm-title='Delete ' + ${event.title} + '?',data-confirm='The event and its data are removed permanently. Registered participants are notified.',data-confirm-action='Delete Event'">
+                            <button class="danger-icon-button" type="submit" title="Delete event"><i class="bi bi-trash3"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="large-empty filtered-empty" id="organizerEventEmpty" style="display:none"><div class="empty-icon"><i class="bi bi-search"></i></div><h2>No matching events</h2><p>Try a different search or filter.</p></section>
+        <section class="large-empty" th:if="${#lists.isEmpty(events)}">
+            <div class="empty-icon"><i class="bi bi-calendar-plus"></i></div><h2>Create your first event</h2><p>Your events and registration counts will appear here.</p><a class="primary-button" th:href="@{/organizer/events/new}"><i class="bi bi-plus-lg"></i>Create Event</a>
+        </section>
+    </main>
+</div>
+<div th:replace="~{fragments :: toasts}"></div><div th:replace="~{fragments :: confirmModal}"></div>
+<script th:src="@{/js/site.js(v='2026.11.1')}" src="/js/site.js"></script>
+</body>
+</html>

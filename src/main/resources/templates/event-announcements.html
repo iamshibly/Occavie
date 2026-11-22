@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Announcements', 'app')}"></head>
+<body class="ef-workspace">
+<div th:replace="~{fragments :: topbar}"></div>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('myevents')}"></div>
+    <main class="app-main">
+        <section class="page-heading">
+            <div><span class="section-kicker">ORGANIZER WORKSPACE</span><h1>Announcements</h1><p th:text="${event.title}">Event</p></div>
+            <a class="secondary-button" th:href="@{'/organizer/events/' + ${event.id} + '/participants'}"><i class="bi bi-people"></i>Participants</a>
+        </section>
+        <div class="profile-note"><i class="bi bi-info-circle"></i><p>Announcements go only to people registered for this event, as an in-app notification and an email (unless they opted out of announcement emails). Limits: 3 per event and 10 in total per 24 hours.</p></div>
+        <form class="surface-card profile-form-card" th:action="@{'/organizer/events/' + ${event.id} + '/announcements'}" method="post" data-loading
+              th:if="${@display.status(event) == 'UPCOMING'}">
+            <div class="field-group"><label for="annSubject">Subject</label><input id="annSubject" name="subject" type="text" minlength="3" maxlength="100" required placeholder="e.g. Doors open at 9:30"></div>
+            <div class="field-group"><label for="annMessage">Message</label><textarea id="annMessage" name="message" rows="5" minlength="10" maxlength="1000" required placeholder="Plain text, up to 1000 characters"></textarea></div>
+            <div class="form-actions-row profile-actions"><button class="primary-button" type="submit"><i class="bi bi-megaphone"></i><span>Send to registered attendees</span></button></div>
+        </form>
+        <section class="large-empty" th:unless="${@display.status(event) == 'UPCOMING'}"><div class="empty-icon"><i class="bi bi-megaphone"></i></div><h2>Announcements are closed</h2><p>You can send announcements only for published, upcoming events.</p></section>
+        <section class="table-card" th:if="${!#lists.isEmpty(announcements)}">
+            <div class="data-table-wrap" tabindex="0" role="region" aria-label="Scrollable table"><table class="data-table"><caption class="ov-sr">Sent announcements</caption>
+                <thead><tr><th scope="col">Subject</th><th scope="col">Sent</th><th scope="col">Recipients</th></tr></thead>
+                <tbody><tr th:each="a : ${announcements}"><td><strong th:text="${a.subject}">Subject</strong><small th:text="${a.message}">Message</small></td><td th:text="${#temporals.format(a.createdAt, 'd MMM yyyy, h:mm a')}">Date</td><td th:text="${a.recipientCount}">0</td></tr></tbody>
+            </table></div>
+        </section>
+    </main>
+</div>
+<div th:replace="~{fragments :: toasts}"></div>
+<script th:src="@{/js/site.js(v='2026.11.4')}" src="/js/site.js"></script>
+</body>
+</html>

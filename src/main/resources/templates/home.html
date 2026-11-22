@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Find your next unforgettable experience', 'public')}"></head>
+<body class="ov-home">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div th:replace="~{fragments :: siteNav('home')}"></div>
+
+<main id="main-content">
+    <!-- Hero: full-bleed photo -->
+    <section class="ov-hero ov-hero-photo-bg ov-home-hero" aria-labelledby="ovHeroTitle">
+        <div class="ov-auth-bg" aria-hidden="true">
+            <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span>
+            <i class="orb o1"></i><i class="orb o2"></i>
+        </div>
+        <div class="ov-container ov-hero-inner">
+            <p class="ov-eyebrow">EVENTS · LEARN · CONNECT</p>
+            <h1 id="ovHeroTitle">Find your next <em>unforgettable</em> experience.</h1>
+            <p class="ov-hero-sub">Discover conferences, workshops, concerts and meetups. Book your seat in a few clicks, or host an event of your own.</p>
+            <form class="ov-search" th:action="@{/events}" action="/events" method="get" role="search">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <label class="ov-sr" for="ovEventSearch">Search events by title or keyword</label>
+                <input id="ovEventSearch" name="ask" type="search" placeholder="Try: free tech events this weekend in Dhaka" autocomplete="off" maxlength="160">
+                <button class="primary-button" type="submit">Search</button>
+            </form>
+            <div class="ov-try" aria-label="Quick searches">
+                <span>Popular:</span>
+                <a th:href="@{/events(ask='free events this weekend')}" href="/events">Free this weekend</a>
+                <a th:href="@{/events(ask='tech workshops')}" href="/events">Tech workshops</a>
+                <a th:href="@{/events(ask='music')}" href="/events">Music</a>
+                <a th:href="@{/events(ask='cheap events')}" href="/events">Under budget</a>
+            </div>
+            <ul class="ov-home-stats" aria-label="Occavie at a glance">
+                <li><strong th:text="${upcomingCount}">24</strong><span>upcoming events</span></li>
+                <li><strong th:text="${#lists.size(categories)}">8</strong><span>topics to explore</span></li>
+                <li><strong>Free</strong><span>and paid tickets</span></li>
+                <li><strong>PDF</strong><span>tickets with QR codes</span></li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Category tiles -->
+    <section class="ov-container ov-cat-section" th:if="${!#lists.isEmpty(categories)}" aria-label="Browse by category">
+        <div class="ov-cat-grid">
+            <a class="ov-cat-tile" th:href="@{/events}" href="/events"><i class="bi bi-grid-fill" aria-hidden="true"></i><span>All events</span></a>
+            <a class="ov-cat-tile" th:attr="data-cat=${category}" th:each="category : ${categories}" th:href="@{/events(category=${category})}" href="/events">
+                <i class="bi" aria-hidden="true" th:classappend="${category == 'Technology' ? 'bi-laptop' : category == 'Business' ? 'bi-briefcase' : category == 'Education' ? 'bi-mortarboard' : category == 'Health' ? 'bi-heart-pulse' : category == 'Music' ? 'bi-music-note-beamed' : category == 'Sports' ? 'bi-trophy' : category == 'Career' ? 'bi-person-workspace' : category == 'Community' ? 'bi-people' : category == 'Design' ? 'bi-palette' : category == 'Arts' ? 'bi-brush' : category == 'Science' ? 'bi-radioactive' : category == 'Food' ? 'bi-cup-hot' : category == 'Charity' ? 'bi-heart' : 'bi-stars'}"></i>
+                <span th:text="${category}">Technology</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Upcoming events -->
+    <section class="ov-container ov-section" aria-labelledby="ovUpcomingHeading">
+        <div class="ov-section-head">
+            <div>
+                <p class="ov-eyebrow">HAPPENING SOON</p>
+                <h2 id="ovUpcomingHeading">Upcoming events</h2>
+            </div>
+            <a class="ov-link-arrow" th:href="@{/events}" href="/events">View all events <i class="bi bi-arrow-right"></i></a>
+        </div>
+
+        <div class="ov-event-grid" th:if="${!#lists.isEmpty(featuredEvents)}">
+            <article class="ov-event-card" th:each="event : ${featuredEvents}" th:attr="data-id=${event.id}">
+                <a class="ov-card-photo" th:href="@{'/events/' + ${event.id}}" href="/events" th:aria-label="${'View details for ' + event.title}" tabindex="-1">
+                    <img data-event-image th:attr="data-event-category=${event.category}" th:src="${event.imageUrl}"
+                         src="/images/event-visual.png" th:alt="${event.title + ' cover image'}" alt="Event cover" width="600" height="375" loading="lazy" decoding="async">
+                    <span class="ov-card-tag" th:attr="data-cat=${event.category}" th:text="${event.category}">Technology</span>
+                </a>
+                <div class="ov-event-card-body">
+                    <span class="ov-event-date"><i class="bi bi-calendar3"></i><span th:text="${event.formattedDate}">20 May 2026</span></span>
+                    <h3><a th:href="@{'/events/' + ${event.id}}" href="/events" th:text="${event.title}">Tech Innovation Summit</a></h3>
+                    <p class="ov-event-location"><i class="bi bi-geo-alt"></i> <span th:text="${event.location}">Dhaka, Bangladesh</span></p>
+                    <div class="ov-card-footer">
+                        <strong class="ov-card-price" th:classappend="${event.paid} ? '' : ' is-free'" th:text="${startingPrices[event.id]}">Free</strong>
+                        <a class="ov-card-action" th:href="@{'/events/' + ${event.id}}" href="/events">View details <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+            </article>
+        </div>
+        <div class="ov-empty" th:if="${#lists.isEmpty(featuredEvents)}">
+            <div class="empty-icon"><i class="bi bi-calendar2-plus"></i></div>
+            <h3>No upcoming events yet</h3>
+            <p>New events appear here as soon as organizers publish them.</p>
+            <a class="primary-button" th:href="@{/events}" href="/events">Browse all events</a>
+        </div>
+    </section>
+
+    <!-- Organize -->
+    <section class="ov-container ov-section" id="organize" aria-labelledby="ovOrganizeHeading">
+        <div class="ov-organize">
+            <div class="ov-organize-copy">
+                <p class="ov-eyebrow">FOR ORGANIZERS</p>
+                <h2 id="ovOrganizeHeading">Host an event people remember.</h2>
+                <p>Publish your event, sell free or paid tickets, and manage everything from one dashboard.</p>
+                <div class="ov-organize-actions">
+                    <a class="primary-button" th:if="${user == null}" th:href="@{/register}" href="/register">Start organizing</a>
+                    <a class="primary-button" th:if="${user != null and user.role == 'ORGANIZER'}" th:href="@{/organizer/events/new}" href="/organizer/events/new">Create an event</a>
+                    <a class="primary-button" th:if="${user != null and user.role != 'ORGANIZER'}" th:href="@{/dashboard}" href="/dashboard">Open dashboard</a>
+                    <a class="secondary-button" th:href="@{/contact}" href="/contact">Talk to support</a>
+                </div>
+            </div>
+            <ul class="ov-feature-list">
+                <li><i class="bi bi-ticket-perforated"></i><div><strong>Flexible ticketing</strong><span>Free or paid events, ticket types, capacity limits and coupons.</span></div></li>
+                <li><i class="bi bi-calendar2-week"></i><div><strong>Complete event pages</strong><span>Agenda, speakers, sponsors and photo gallery.</span></div></li>
+                <li><i class="bi bi-people"></i><div><strong>Bookings and feedback</strong><span>Participant lists, PDF tickets and post-event ratings.</span></div></li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="ov-container ov-section" id="about" aria-labelledby="ovHowHeading" data-reveal>
+        <div class="ov-ab-head"><p class="ov-eyebrow">HOW IT WORKS</p><h2 id="ovHowHeading">From curious to checked in, in three steps</h2></div>
+        <ol class="ov-home-steps">
+            <li><span class="ov-home-step-ic"><i class="bi bi-search" aria-hidden="true"></i></span><b aria-hidden="true">1</b><h3>Discover</h3><p>Search in plain words, filter by topic, price, date or place, and compare events side by side.</p></li>
+            <li><span class="ov-home-step-ic"><i class="bi bi-ticket-perforated" aria-hidden="true"></i></span><b aria-hidden="true">2</b><h3>Book</h3><p>Pick a ticket, apply a coupon and confirm. Your PDF ticket with a QR code is ready instantly.</p></li>
+            <li><span class="ov-home-step-ic"><i class="bi bi-qr-code-scan" aria-hidden="true"></i></span><b aria-hidden="true">3</b><h3>Show up</h3><p>Scan in at the door, then share a rating so the next event is even better.</p></li>
+        </ol>
+    </section>
+
+    <!-- Smart helpers -->
+    <section class="ov-ab-band ov-home-band" aria-labelledby="ovSmartHeading" data-reveal>
+        <div class="ov-container ov-ab-section">
+            <div class="ov-ab-head is-light"><p class="ov-eyebrow">MADE TO SAVE YOU TIME</p><h2 id="ovSmartHeading">Smart helpers, built in</h2>
+                <p>Explainable and private: no external AI service and nothing to set up.</p></div>
+            <div class="ov-ab-smart">
+                <a th:href="@{/events}" href="/events"><i class="bi bi-search" aria-hidden="true"></i><h3>Smart search</h3><p>Type "free AI workshops this weekend" and we filter for you.</p></a>
+                <a th:href="@{/events}" href="/events"><i class="bi bi-lightbulb" aria-hidden="true"></i><h3>Recommendations</h3><p>Picks based on what you save and book, each with a 💡 reason.</p></a>
+                <a th:href="@{/events}" href="/events"><i class="bi bi-columns-gap" aria-hidden="true"></i><h3>Compare events</h3><p>Two or three events side by side: date, price, seats and more.</p></a>
+                <a th:href="@{/events}" href="/events"><i class="bi bi-chat-dots" aria-hidden="true"></i><h3>Concierge</h3><p>Ask about seats, prices and venues and get answers from live data.</p></a>
+                <a th:href="@{/about}" href="/about"><i class="bi bi-rocket-takeoff" aria-hidden="true"></i><h3>Organizer Copilot</h3><p>A readiness score and a to-do list for every event you host.</p></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final call to action -->
+    <section class="ov-container ov-section" aria-label="Get started" data-reveal>
+        <div class="ov-ab-final">
+            <h2>Ready to make your next moment count?</h2>
+            <div class="ov-ab-cta">
+                <a class="ov-gold-button" th:href="@{/events}" href="/events">Find an event</a>
+                <a class="ov-ab-ghost" th:if="${user == null}" th:href="@{/register}" href="/register">Create a free account</a>
+                <a class="ov-ab-ghost" th:if="${user != null}" th:href="@{/about}" href="/about">About Occavie</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments :: siteFooter}"></div>
+<script th:src="@{/js/site.js(v='2026.11.2')}" src="/js/site.js"></script>
+<script th:src="@{/js/compare.js}" src="/js/compare.js"></script>
+<script>
+(function(){var els=document.querySelectorAll('[data-reveal]');if(!('IntersectionObserver' in window)||matchMedia('(prefers-reduced-motion: reduce)').matches){return;}
+document.documentElement.classList.add('ov-reveal-on');
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('is-in');io.unobserve(e.target);}});},{threshold:.12});
+els.forEach(function(el){io.observe(el);});})();
+</script>
+</body>
+</html>

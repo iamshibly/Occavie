@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Compare events', 'public')}"></head>
+<body class="ov-page ov-compare-page">
+<a class="skip-link" href="#main-content">Skip to content</a>
+<div th:replace="~{fragments :: siteNav('events')}"></div>
+<main id="main-content">
+  <section class="ov-auth-scene ov-ex-hero ov-cmp-hero" aria-labelledby="cmpTitle">
+  <div class="ov-auth-bg" aria-hidden="true">
+    <span class="s1"></span><span class="s2"></span><span class="s3"></span><span class="s4"></span><span class="s5"></span>
+    <i class="orb o1"></i><i class="orb o2"></i>
+  </div>
+    <div class="ov-container ov-cmp-hero-inner">
+      <a class="ov-ed-back" th:href="@{/events}" href="/events"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to events</a>
+      <p class="ov-eyebrow">SIDE BY SIDE</p>
+      <h1 id="cmpTitle">Compare <em>events</em></h1>
+      <p class="ov-ab-lead">Price, date, venue, tickets, seats and speakers in one view. The best value in each row is highlighted.</p>
+    </div>
+  </section>
+
+  <div class="ov-container ov-compare-body">
+    <div class="ov-empty" th:if="${!enough}">
+      <div class="empty-icon"><i class="bi bi-layout-split"></i></div>
+      <h3>Pick at least two events to compare</h3>
+      <p>On the events page, press <strong>Compare</strong> on two or three events, then open the comparison from the bar at the bottom.</p>
+      <a class="primary-button" th:href="@{/events}" href="/events">Browse events</a>
+    </div>
+
+    <div class="ov-compare-scroll" th:if="${enough}" tabindex="0" role="region" aria-label="Event comparison table, scrolls sideways on small screens">
+      <table class="ov-compare-table">
+        <caption class="ov-sr">Comparison of the selected events</caption>
+        <thead>
+          <tr>
+            <td class="ov-compare-corner"></td>
+            <th scope="col" th:each="item : ${items}" class="ov-compare-head"><div class="ov-compare-headbox">
+              <div class="ov-compare-photo"><img th:src="${item.image}" src="/images/event-visual.png" th:alt="${item.event.title + ' cover image'}" alt="Event cover" width="480" height="300" loading="lazy" decoding="async"></div>
+              <span class="ov-card-tag" th:attr="data-cat=${item.event.category}" th:text="${item.event.category}">Tag</span>
+              <strong th:text="${item.event.title}">Event title</strong>
+              <a class="ov-compare-remove" th:href="${removeLinks[item.event.id]}" href="/compare" th:aria-label="${'Remove ' + item.event.title + ' from the comparison'}"><i class="bi bi-x-lg" aria-hidden="true"></i> Remove</a>
+            </div></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">Date &amp; time</th>
+            <td th:each="item : ${items}" th:classappend="${item.event.id == soonestId} ? 'is-best' : ''">
+              <span th:text="${item.date + ' · ' + item.time}">Date</span>
+              <span class="ov-compare-badge" th:if="${item.event.id == soonestId}">Soonest</span>
+              <span class="ov-compare-badge is-muted" th:if="${item.past}">Past event</span></td></tr>
+          <tr><th scope="row">Venue</th><td th:each="item : ${items}" th:text="${item.event.location}">Venue</td></tr>
+          <tr><th scope="row">Price from</th>
+            <td th:each="item : ${items}" th:classappend="${item.event.id == cheapestId} ? 'is-best' : ''">
+              <strong class="ov-compare-price" th:text="${item.price}">Free</strong>
+              <span class="ov-compare-badge" th:if="${item.event.id == cheapestId}">Lowest price</span></td></tr>
+          <tr><th scope="row">Ticket types</th>
+            <td th:each="item : ${items}">
+              <ul class="ov-compare-list" th:if="${!#lists.isEmpty(item.tickets)}"><li th:each="t : ${item.tickets}"><span th:text="${t.name}">Standard</span><b th:text="${t.price}">৳0</b><small th:text="${t.left + ' left'}">10 left</small></li></ul>
+              <span class="ov-compare-muted" th:if="${#lists.isEmpty(item.tickets)}">Standard entry</span></td></tr>
+          <tr><th scope="row">Seats left</th>
+            <td th:each="item : ${items}" th:classappend="${item.event.id == mostSeatsId} ? 'is-best' : ''">
+              <strong th:text="${item.seatsLeft + ' of ' + item.event.capacity}">100 of 100</strong>
+              <span class="ov-compare-bar" aria-hidden="true"><i th:style="${'width:' + item.seatPercentLeft + '%'}"></i></span>
+              <span class="ov-compare-badge" th:if="${item.event.id == mostSeatsId}">Most seats</span>
+              <span class="ov-compare-badge is-warn" th:if="${item.seatsLeft == 0}">Sold out</span></td></tr>
+          <tr><th scope="row">Speakers</th>
+            <td th:each="item : ${items}"><span th:if="${!#lists.isEmpty(item.speakers)}" th:text="${#strings.listJoin(item.speakers, ', ')}">Names</span>
+              <span class="ov-compare-muted" th:if="${#lists.isEmpty(item.speakers)}">None listed</span></td></tr>
+          <tr><th scope="row">Programme</th>
+            <td th:each="item : ${items}"><span th:text="${item.sessions > 0 ? item.sessions + (item.sessions == 1 ? ' session' : ' sessions') : 'Schedule to be announced'}">3 sessions</span></td></tr>
+          <tr><th scope="row">Rating</th>
+            <td th:each="item : ${items}"><span th:if="${item.reviews > 0}" th:text="${#numbers.formatDecimal(item.rating, 1, 1) + ' / 5 (' + item.reviews + ')'}">4.5 / 5</span>
+              <span class="ov-compare-muted" th:if="${item.reviews == 0}">No reviews yet</span></td></tr>
+          <tr><th scope="row">Organizer</th><td th:each="item : ${items}" th:text="${item.event.organizerName}">Organizer</td></tr>
+          <tr class="ov-compare-actions"><th scope="row">Next step</th>
+            <td th:each="item : ${items}">
+              <a class="primary-button" th:href="@{'/events/' + ${item.event.id}}" href="/events" th:text="${item.bookable ? 'View &amp; book' : 'View details'}">View details</a></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+<div th:replace="~{fragments :: siteFooter}"></div>
+<script th:src="@{/js/site.js(v='2026.11.2')}" src="/js/site.js"></script>
+<script th:src="@{/js/compare.js}" src="/js/compare.js"></script>
+</body>
+</html>
