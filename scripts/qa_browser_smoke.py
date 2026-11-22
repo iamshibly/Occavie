@@ -151,6 +151,41 @@ def guest_checks(browser):
         context.close()
 
 
+def signup_journey(browser):
+    if PUBLIC_ONLY:
+        return
+    if urlsplit(BASE).hostname not in ("localhost", "127.0.0.1"):
+        return
+    import uuid
+    email = "qa-" + uuid.uuid4().hex[:12] + "@example.test"
+    password = "QaBrowser123!"
+    context = browser.new_context(viewport={"width": 1440, "height": 900})
+    page = context.new_page()
+
+    def create_account():
+        navigate(page, "/register")
+        page.locator("#fullName").fill("Occavie Browser QA")
+        page.locator("#registerEmail").fill(email)
+        page.locator("#registerPassword").fill(password)
+        page.locator("#confirmPassword").fill(password)
+        page.locator("#registerForm button[type=submit]").click()
+        page.wait_for_url("**/login", timeout=30000)
+        if "Account created" not in page.locator("body").inner_text():
+            raise AssertionError("Expected account creation confirmation")
+
+    attempt("NEW USER registration", create_account, page)
+
+    def sign_in_new_user():
+        navigate(page, "/login")
+        page.locator("#loginEmail").fill(email)
+        page.locator("#loginPassword").fill(password)
+        page.locator("#loginForm button[type=submit]").click()
+        page.wait_for_url("**/dashboard", timeout=30000)
+
+    attempt("NEW USER login", sign_in_new_user, page)
+    context.close()
+
+
 def role_checks(browser):
     if PUBLIC_ONLY:
         warn("roles", "Skipped: QA_PUBLIC_ONLY enabled; no production login attempted")
@@ -188,6 +223,103 @@ def role_checks(browser):
                 if "/profile" not in page.url:
                     raise AssertionError("Profile link did not navigate")
             attempt(role + " profile link click", profile_link, page)
+        if role == "PARTICIPANT" and "/dashboard" in page.url:
+            def free_registration():
+                navigate(page, "/events")
+                cards = page.locator('article.ov-event-card[data-pricing="FREE"][data-status="UPCOMING"]')
+                if not cards.count():
+                    raise AssertionError("No upcoming free event available in isolated QA data")
+                event_url = cards.first.locator("a.ov-card-action").get_attribute("href")
+                navigate(page, event_url)
+                form = page.locator("form.ov-ticket-form").first
+                if not form.count():
+                    raise AssertionError("Free registration form missing")
+                form.locator('button[type="submit"]').click()
+                page.wait_for_url("**/participant/registrations", timeout=30000)
+                ticket = page.locator('a[href$="/ticket.pdf"]').first
+                if not ticket.count():
+                    raise AssertionError("Ticket PDF link missing after free registration")
+                result = page.context.request.get(BASE + ticket.get_attribute("href"), timeout=30000)
+                if result.status != 200 or "pdf" not in result.headers.get("content-type", ""):
+                    raise AssertionError("Ticket PDF endpoint did not return a PDF")
+
+            attempt("PARTICIPANT free booking and ticket PDF", free_registration, page)
+
+            def cancel_registration():
+                navigate(page, "/participant/registrations")
+                form = page.locator('form[action$="/cancel"]').first
+                if not form.count():
+                    raise AssertionError("Free registration cancellation form missing")
+                form.locator('button[type="submit"]').click()
+                if "open" not in (page.locator("#confirmModal").get_attribute("class") or ""):
+                    raise AssertionError("Cancellation confirmation modal did not open")
+                page.locator("#confirmCancel").click()
+                if "open" in (page.locator("#confirmModal").get_attribute("class") or ""):
+                    raise AssertionError("Cancellation modal did not close")
+                form.locator('button[type="submit"]').click()
+                page.locator("#confirmProceed").click()
+                page.wait_for_url("**/participant/registrations", timeout=30000)
+
+            attempt("PARTICIPANT cancel confirmation and cancellation", cancel_registration, page)
+
+            def saved_toggle():
+                navigate(page, "/events")
+                cards = page.locator('article.ov-event-card[data-status="UPCOMING"]')
+                if not cards.count():
+                    raise AssertionError("No event available")
+                event_url = cards.first.locator("a.ov-card-action").get_attribute("href")
+                navigate(page, event_url)
+                button = page.locator("form[data-save-toggle] button").first
+                if not button.count():
+                    raise AssertionError("Save event button missing")
+                before = button.get_attribute("aria-pressed")
+                button.click()
+                page.wait_for_function("""() => {
+                  const b=document.querySelector('form[data-save-toggle] button');
+                  return b && !b.disabled && b.getAttribute('aria-pressed') === 'true';
+                }""", timeout=15000)
+                button.click()
+                page.wait_for_function("""() => {
+                  const b=document.querySelector('form[data-save-toggle] button');
+                  return b && !b.disabled && b.getAttribute('aria-pressed') === 'false';
+                }""", timeout=15000)
+
+            attempt("PARTICIPANT save/unsave via JavaScript", saved_toggle, page)
+
+            def paid_checkout():
+                navigate(page, "/events")
+                cards = page.locator('article.ov-event-card[data-pricing="PAID"][data-status="UPCOMING"]')
+                if not cards.count():
+                    raise AssertionError("No upcoming paid event available")
+                event_url = cards.first.locator("a.ov-card-action").get_attribute("href")
+                navigate(page, event_url)
+                forms = page.locator('form.ov-ticket-form')
+                if not forms.count():
+                    raise AssertionError("Paid checkout form missing")
+                forms.first.locator('button[type="submit"]').click()
+                page.wait_for_url("**/checkout**", timeout=30000)
+                if "Checkout" not in page.locator("body").inner_text():
+                    raise AssertionError("Checkout UI missing")
+
+            attempt("PARTICIPANT paid checkout navigation", paid_checkout, page)
+
+        if "/dashboard" in page.url or role in ROLE_PAGES:
+            def logout_dialog():
+                navigate(page, "/dashboard")
+                button = page.locator('form.sidebar-logout button[type="submit"]')
+                if not button.count():
+                    raise AssertionError("Logout button missing")
+                button.click()
+                if "open" not in (page.locator("#confirmModal").get_attribute("class") or ""):
+                    raise AssertionError("Logout confirmation did not open")
+                page.locator("#confirmCancel").click()
+                if "open" in (page.locator("#confirmModal").get_attribute("class") or ""):
+                    raise AssertionError("Logout modal did not close")
+                button.click()
+                page.locator("#confirmProceed").click()
+                page.wait_for_url("**/login?logout", timeout=30000)
+
+            attempt(role + " logout confirmation and sign-out", logout_dialog, page)
         context.close()
 
 
@@ -196,6 +328,7 @@ def main():
         browser = playwright.chromium.launch(headless=True, args=["--no-sandbox"])
         try:
             guest_checks(browser)
+            signup_journey(browser)
             role_checks(browser)
         finally:
             browser.close()
