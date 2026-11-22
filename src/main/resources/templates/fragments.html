@@ -203,8 +203,10 @@
         </nav>
         <nav class="ov-footer-col" aria-label="Account">
             <h3>Account</h3>
-            <a th:href="@{/login}" href="/login">Log in</a>
-            <a th:href="@{/register}" href="/register">Create account</a>
+            <a th:if="${currentUser == null and user == null}" th:href="@{/login}" href="/login">Log in</a>
+            <a th:if="${currentUser == null and user == null}" th:href="@{/register}" href="/register">Create account</a>
+            <a th:if="${currentUser != null or user != null}" th:href="@{/dashboard}" href="/dashboard">Dashboard</a>
+            <a th:if="${currentUser != null or user != null}" th:href="@{/profile}" href="/profile">My profile</a>
             <a th:href="@{/contact}" href="/contact">Contact support</a>
         </nav>
         <div class="ov-footer-col ov-footer-dev" th:with="devName=${@site.developerName},devUrl=${@site.developerUrl},devMail=${@site.contactEmail},devWa=${@site.contactWhatsapp},devFb=${@site.facebookUrl},devLi=${@site.linkedinUrl}">

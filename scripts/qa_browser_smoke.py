@@ -137,6 +137,15 @@ def guest_checks(browser):
             if password.get_attribute("type") != "text":
                 raise AssertionError("Show password did not work")
         attempt(label + " password visibility", show_password, page)
+        def guest_links():
+            navigate(page, "/about")
+            footer = page.locator("footer.ov-footer")
+            if not footer.locator('a[href="/login"]').count() or not footer.locator('a[href="/register"]').count():
+                raise AssertionError("Guest footer login/signup links missing")
+            copilot = page.locator('.ov-ab-smart a:has-text("Organizer Copilot")').first
+            if not copilot.count() or copilot.get_attribute("href") != "/login":
+                raise AssertionError("Guest Organizer Copilot link is incorrect")
+        attempt(label + " guest footer and copilot links", guest_links, page)
         def search():
             navigate(page, "/events")
             field = page.locator("#eventSearch")
@@ -213,6 +222,15 @@ def role_checks(browser):
                     raise AssertionError("Guest signup CTA still visible when signed in")
                 if not page.get_by_text("Open dashboard", exact=True).count():
                     raise AssertionError("Logged-in dashboard CTA missing")
+                footer = page.locator('footer.ov-footer')
+                if footer.locator('a[href="/login"], a[href="/register"]').count():
+                    raise AssertionError("Authenticated footer still shows guest links")
+                if not footer.locator('a[href="/profile"]').count():
+                    raise AssertionError("Authenticated footer profile link missing")
+                copilot = page.locator('.ov-ab-smart a:has-text("Organizer Copilot")').first
+                expected = "/organizer/events" if role == "ORGANIZER" else "/dashboard"
+                if copilot.get_attribute("href") != expected:
+                    raise AssertionError("Organizer Copilot link points to " + str(copilot.get_attribute("href")))
             attempt(role + " About CTA after login", about_authenticated, page)
             def profile_link():
                 navigate(page, "/dashboard")
