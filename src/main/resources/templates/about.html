@@ -80,7 +80,9 @@
         <a href="/events" th:href="@{/events}"><i class="bi bi-lightbulb" aria-hidden="true"></i><h3>Recommendations</h3><p>Picks based on what you save and book, each with a reason behind the 💡.</p></a>
         <a href="/events" th:href="@{/events}"><i class="bi bi-columns-gap" aria-hidden="true"></i><h3>Compare events</h3><p>Two or three events side by side: date, price, seats and more.</p></a>
         <a href="/events" th:href="@{/events}"><i class="bi bi-chat-dots" aria-hidden="true"></i><h3>Concierge</h3><p>Ask about seats, prices and venues and get answers from live data.</p></a>
-        <a href="/login" th:href="@{/login}"><i class="bi bi-rocket-takeoff" aria-hidden="true"></i><h3>Organizer Copilot</h3><p>A readiness score and a ranked to-do list for every event.</p></a>
+        <a th:if="${currentUser == null}" href="/login" th:href="@{/login}"><i class="bi bi-rocket-takeoff" aria-hidden="true"></i><h3>Organizer Copilot</h3><p>A readiness score and a ranked to-do list for every event.</p></a>
+        <a th:if="${currentUser != null and currentUser.role == 'ORGANIZER'}" href="/organizer/events" th:href="@{/organizer/events}"><i class="bi bi-rocket-takeoff" aria-hidden="true"></i><h3>Organizer Copilot</h3><p>A readiness score and a ranked to-do list for every event.</p></a>
+        <a th:if="${currentUser != null and currentUser.role != 'ORGANIZER'}" href="/dashboard" th:href="@{/dashboard}"><i class="bi bi-rocket-takeoff" aria-hidden="true"></i><h3>Organizer Copilot</h3><p>A readiness score and a ranked to-do list for every event.</p></a>
       </div>
     </div>
   </section>
