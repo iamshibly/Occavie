@@ -18,7 +18,8 @@
       <p class="ov-ab-lead">Occavie is where people find events worth showing up for, and where organizers get everything they need to run them well, from the first idea to the last check-in.</p>
       <div class="ov-ab-cta">
         <a class="ov-gold-button" th:href="@{/events}" href="/events">Explore events</a>
-        <a class="ov-ab-ghost" th:href="@{/register}" href="/register">Create a free account</a>
+        <a class="ov-ab-ghost" th:if="${currentUser == null}" th:href="@{/register}" href="/register">Create a free account</a>
+        <a class="ov-ab-ghost" th:if="${currentUser != null}" th:href="@{/dashboard}" href="/dashboard">Open dashboard</a>
       </div>
       <ul class="ov-ab-facts" aria-label="Occavie at a glance">
         <li><strong>3</strong><span>workspaces: participant, organizer, admin</span></li>
@@ -113,7 +114,12 @@
     </div>
     <div class="ov-ab-final">
       <h2>Ready to make your next moment count?</h2>
-      <div class="ov-ab-cta"><a class="ov-gold-button" th:href="@{/events}" href="/events">Find an event</a><a class="ov-ab-ghost on-light" th:href="@{/register}" href="/register">Host your own</a></div>
+      <div class="ov-ab-cta">
+        <a class="ov-gold-button" th:href="@{/events}" href="/events">Find an event</a>
+        <a class="ov-ab-ghost on-light" th:if="${currentUser == null}" th:href="@{/register}" href="/register">Host your own</a>
+        <a class="ov-ab-ghost on-light" th:if="${currentUser != null and currentUser.role == 'ORGANIZER'}" th:href="@{/organizer/events/new}" href="/organizer/events/new">Create an event</a>
+        <a class="ov-ab-ghost on-light" th:if="${currentUser != null and currentUser.role != 'ORGANIZER'}" th:href="@{/dashboard}" href="/dashboard">Open dashboard</a>
+      </div>
     </div>
   </section>
 </main>
