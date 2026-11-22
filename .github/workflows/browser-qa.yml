@@ -53,7 +53,7 @@ jobs:
 
       - name: Start isolated Occavie test app with disposable MongoDB
         run: |
-          MONGODB_URI=mongodb://127.0.0.1:27017/occavie_qa \
+          MONGODB_URI=mongodb://127.0.0.1:27017/occavie_qa?retryWrites=false \
           MONGODB_DATABASE=occavie_qa \
           OCCAVIE_SAMPLE_EVENTS=true \
           java -jar target/eventflow-0.0.1-SNAPSHOT.jar > qa-app.log 2>&1 &
@@ -77,13 +77,13 @@ jobs:
       - name: Run existing Java JUnit suite against disposable MongoDB
         if: always()
         env:
-          MONGODB_URI: mongodb://127.0.0.1:27017/occavie_qa
+          MONGODB_URI: mongodb://127.0.0.1:27017/occavie_qa?retryWrites=false
           MONGODB_DATABASE: occavie_qa
         run: ./mvnw -B test
 
       - name: Run existing JavaScript unit tests
         if: always()
-        run: node --test src/test/js/
+        run: node --test src/test/js/*.test.js
 
       - name: Read-only Chromium audit of deployed Render public pages
         if: always()

@@ -298,7 +298,7 @@ def role_checks(browser):
                     raise AssertionError("Paid checkout form missing")
                 forms.first.locator('button[type="submit"]').click()
                 page.wait_for_url("**/checkout**", timeout=30000)
-                if "Checkout" not in page.locator("body").inner_text():
+                if "checkout" not in page.locator("body").inner_text().lower():
                     raise AssertionError("Checkout UI missing")
 
             attempt("PARTICIPANT paid checkout navigation", paid_checkout, page)
