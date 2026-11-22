@@ -223,7 +223,7 @@ def role_checks(browser):
                 if "/profile" not in page.url:
                     raise AssertionError("Profile link did not navigate")
             attempt(role + " profile link click", profile_link, page)
-        if role == "PARTICIPANT" and "/dashboard" in page.url:
+        if role == "PARTICIPANT":
             def free_registration():
                 navigate(page, "/events")
                 cards = page.locator('article.ov-event-card[data-pricing="FREE"][data-status="UPCOMING"]')

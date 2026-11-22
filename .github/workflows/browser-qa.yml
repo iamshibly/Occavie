@@ -74,6 +74,26 @@ jobs:
           QA_OUTPUT_DIR: qa-output
         run: python scripts/qa_browser_smoke.py
 
+      - name: Run existing Java JUnit suite against disposable MongoDB
+        if: always()
+        env:
+          MONGODB_URI: mongodb://127.0.0.1:27017/occavie_qa
+          MONGODB_DATABASE: occavie_qa
+        run: ./mvnw -B test
+
+      - name: Run existing JavaScript unit tests
+        if: always()
+        run: node --test src/test/js/
+
+      - name: Read-only Chromium audit of deployed Render public pages
+        if: always()
+        continue-on-error: true
+        env:
+          QA_BASE_URL: https://occavie.onrender.com
+          QA_PUBLIC_ONLY: '1'
+          QA_OUTPUT_DIR: qa-output-production
+        run: python scripts/qa_browser_smoke.py
+
       - name: Archive QA report, screenshots and Spring logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -83,4 +103,6 @@ jobs:
           retention-days: 14
           path: |
             qa-output/
+            qa-output-production/
+            target/surefire-reports/
             qa-app.log
